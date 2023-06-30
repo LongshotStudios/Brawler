@@ -25,4 +25,9 @@ public class PlayerControl : MonoBehaviour
        lastInput = value.Get<Vector2>();
     }
 
+    private void OnAttack()
+    {
+        animator.SetTrigger("Attack");
+    }
+
 }
