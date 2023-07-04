@@ -6,7 +6,7 @@
             "id": "da65c84c-112a-4f16-b3e1-860712295fef",
             "actions": [
                 {
-                    "name": "movement",
+                    "name": "Movement",
                     "type": "Value",
                     "id": "7f3405b7-8c07-4189-be44-229aa8004ac5",
                     "expectedControlType": "Vector2",
@@ -15,9 +15,27 @@
                     "initialStateCheck": true
                 },
                 {
-                    "name": "attack",
+                    "name": "AttackQuick",
                     "type": "Button",
                     "id": "e9cd63f5-58f0-48ee-a235-af5d89c82861",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "Roll",
+                    "type": "Button",
+                    "id": "f87ad54a-bbc2-4498-a6bc-cee705801abd",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "AttackStrong",
+                    "type": "Button",
+                    "id": "e62dc937-5da2-48e7-b9f3-1a6e26c6299e",
                     "expectedControlType": "Button",
                     "processors": "",
                     "interactions": "",
@@ -32,7 +50,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "",
-                    "action": "movement",
+                    "action": "Movement",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -43,7 +61,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "",
-                    "action": "movement",
+                    "action": "Movement",
                     "isComposite": true,
                     "isPartOfComposite": false
                 },
@@ -54,7 +72,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "",
-                    "action": "movement",
+                    "action": "Movement",
                     "isComposite": false,
                     "isPartOfComposite": true
                 },
@@ -65,7 +83,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "",
-                    "action": "movement",
+                    "action": "Movement",
                     "isComposite": false,
                     "isPartOfComposite": true
                 },
@@ -76,7 +94,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "",
-                    "action": "movement",
+                    "action": "Movement",
                     "isComposite": false,
                     "isPartOfComposite": true
                 },
@@ -87,7 +105,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "",
-                    "action": "movement",
+                    "action": "Movement",
                     "isComposite": false,
                     "isPartOfComposite": true
                 },
@@ -98,18 +116,40 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "",
-                    "action": "attack",
+                    "action": "AttackQuick",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
                 {
                     "name": "",
-                    "id": "c1d077c3-4146-4b0f-b8e5-db074a529ebd",
+                    "id": "0a210cc8-478f-4bf1-837c-d284f1da5a90",
+                    "path": "<Mouse>/leftButton",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "AttackQuick",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "29ac2caf-dd4e-4aa0-88ca-f9663821f473",
                     "path": "<Keyboard>/space",
                     "interactions": "",
                     "processors": "",
                     "groups": "",
-                    "action": "attack",
+                    "action": "Roll",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "4fb0f878-d459-4bb4-a080-145129ba8ccd",
+                    "path": "<Mouse>/rightButton",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "AttackStrong",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }

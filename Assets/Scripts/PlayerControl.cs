@@ -35,9 +35,19 @@ public class PlayerControl : MonoBehaviour
        lastInput = value.Get<Vector2>();
     }
 
-    private void OnAttack()
+    private void OnAttackQuick()
     {
-        animator.SetTrigger("Attack");
+        animator.SetTrigger("AttackQuick");
+    }
+    
+    private void OnAttackStrong()
+    {
+        animator.SetTrigger("AttackStrong");
+    }
+    
+    private void OnRoll()
+    {  
+        animator.SetTrigger("Roll");
     }
 
 }
