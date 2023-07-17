@@ -3,32 +3,25 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-public class PlayerControl : MonoBehaviour
+public class PlayerControl2D : MonoBehaviour
 {
     public float walkSpeed = 1.0f;
     private Vector2 lastInput;
     private Animator animator;
-    
-    public Transform animatedChild;
-    private Vector3 originalScale;
+    private SpriteRenderer spriteRenderer;
 
     private void Awake()
     {
         animator = GetComponent<Animator>();
-        if (animatedChild != null) {
-            originalScale = animatedChild.localScale;
-        }
+        spriteRenderer = GetComponent<SpriteRenderer>();
     }
     private void Update()
     {
         animator.SetFloat("Speed", lastInput.magnitude);
         var dist = walkSpeed * Time.deltaTime;
-        transform.position += new Vector3(lastInput.x * dist, 0, lastInput.y * dist);
-
-        if (animatedChild != null && lastInput.x != 0) { 
-            var set = originalScale;
-            set.x *= Mathf.Sign(lastInput.x);
-            animatedChild.localScale = set;
+        transform.position += new Vector3(lastInput.x * dist, lastInput.y * dist, 0);
+        if (lastInput.x != 0) {
+            spriteRenderer.flipX = lastInput.x < 0;
         }
     }
     
@@ -51,5 +44,4 @@ public class PlayerControl : MonoBehaviour
     {  
         animator.SetTrigger("Roll");
     }
-
 }
