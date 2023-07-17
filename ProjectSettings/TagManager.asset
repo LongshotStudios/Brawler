@@ -38,6 +38,21 @@ TagManager:
   - 
   - 
   m_SortingLayers:
+  - name: Far
+    uniqueID: 430156263
+    locked: 0
+  - name: Back
+    uniqueID: 2355632617
+    locked: 0
+  - name: Mid
+    uniqueID: 4238562139
+    locked: 0
   - name: Default
     uniqueID: 0
+    locked: 0
+  - name: Fore
+    uniqueID: 652646171
+    locked: 0
+  - name: Near
+    uniqueID: 35459227
     locked: 0
