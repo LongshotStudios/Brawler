@@ -1,0 +1,849 @@
+fileFormatVersion: 2
+guid: 77bcb159cdab34696ab8f4bf62769a5c
+TextureImporter:
+  internalIDToNameTable: []
+  externalObjects: {}
+  serializedVersion: 11
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMasterTextureLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 0
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 400
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  platformSettings:
+  - serializedVersion: 3
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 3
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 3
+    buildTarget: Server
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: pumpKid_Run_0
+      rect:
+        serializedVersion: 2
+        x: 27
+        y: 1001
+        width: 393
+        height: 526
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 662ed1e1160b343f6823ebb526b1216a
+      internalID: -1211208541
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: pumpKid_Run_1
+      rect:
+        serializedVersion: 2
+        x: 500
+        y: 1007
+        width: 272
+        height: 526
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: be12e79e8ddc74512b5b7e55f538f914
+      internalID: -409657606
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: pumpKid_Run_2
+      rect:
+        serializedVersion: 2
+        x: 852
+        y: 1001
+        width: 397
+        height: 526
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: d6af8ed662bd0423389a60d41a959423
+      internalID: 333600833
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: pumpKid_Run_3
+      rect:
+        serializedVersion: 2
+        x: 1287
+        y: 1000
+        width: 369
+        height: 541
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 9089c525973f04ed7b1c7bcb8817710c
+      internalID: -252111193
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: pumpKid_Run_4
+      rect:
+        serializedVersion: 2
+        x: 1691
+        y: 990
+        width: 341
+        height: 529
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 6e357b467b7f246f49638daa7f51145a
+      internalID: 464884842
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: pumpKid_Run_5
+      rect:
+        serializedVersion: 2
+        x: 2042
+        y: 1229
+        width: 5
+        height: 4
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: cdf9051cc57984ed5b351199c2cf6886
+      internalID: 1375412973
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: pumpKid_Run_6
+      rect:
+        serializedVersion: 2
+        x: 1868
+        y: 991
+        width: 5
+        height: 4
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 4bda68860e8d6460ca096e47b770e601
+      internalID: 1963930627
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: pumpKid_Run_7
+      rect:
+        serializedVersion: 2
+        x: 15
+        y: 387
+        width: 359
+        height: 538
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 9b1bfac1d53cb44debca58c85a12f717
+      internalID: -2094274549
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: pumpKid_Run_8
+      rect:
+        serializedVersion: 2
+        x: 445
+        y: 378
+        width: 388
+        height: 514
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: efae38a520ebd450483c399e328bce0c
+      internalID: 539356659
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: pumpKid_Run_9
+      rect:
+        serializedVersion: 2
+        x: 923
+        y: 372
+        width: 372
+        height: 584
+      alignment: 9
+      pivot: {x: 0.4136556, y: -0.00000015676838}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: d0045886af80d4a7bb2e0c906a2dadea
+      internalID: -1657412422
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: pumpKid_Run_10
+      rect:
+        serializedVersion: 2
+        x: 1310
+        y: 381
+        width: 418
+        height: 566
+      alignment: 9
+      pivot: {x: 0.46749339, y: -0.0050760005}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 28e4f85ba55cf4710b28bf31880c87ef
+      internalID: 1948250680
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: pumpKid_Run_11
+      rect:
+        serializedVersion: 2
+        x: 1736
+        y: 694
+        width: 6
+        height: 4
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: cc4ec7b2e35b54164b4cd3f7dc4e0eda
+      internalID: 1399103547
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: pumpKid_Run_12
+      rect:
+        serializedVersion: 2
+        x: 1793
+        y: 370
+        width: 356
+        height: 579
+      alignment: 9
+      pivot: {x: 0.42366526, y: 0.004693382}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 69b6f788ab1a34ecb87827eb5038732c
+      internalID: 472129110
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: pumpKid_Run_13
+      rect:
+        serializedVersion: 2
+        x: 1309
+        y: 657
+        width: 6
+        height: 5
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: ca655b2b5074142a781f90bcc0a3115f
+      internalID: 1548811766
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: pumpKid_Run_14
+      rect:
+        serializedVersion: 2
+        x: 1298
+        y: 638
+        width: 11
+        height: 4
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 526d078c63a2e42d3addb26187dbbb79
+      internalID: -1170410288
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: pumpKid_Run_15
+      rect:
+        serializedVersion: 2
+        x: 1308
+        y: 622
+        width: 21
+        height: 9
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: d56238a2a160f4c728f18314be8f42d5
+      internalID: 1096365674
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: pumpKid_Run_16
+      rect:
+        serializedVersion: 2
+        x: 1330
+        y: 501
+        width: 4
+        height: 8
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: a199069e76446463089a1ac523fe6ff6
+      internalID: -1871976625
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: pumpKid_Run_17
+      rect:
+        serializedVersion: 2
+        x: 915
+        y: 475
+        width: 4
+        height: 7
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 07032d50ac32e4139aa1a5ab628f7f88
+      internalID: -55317127
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: pumpKid_Run_18
+      rect:
+        serializedVersion: 2
+        x: 1334
+        y: 474
+        width: 8
+        height: 12
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: d5e0ba0903f0f48f188fdb3d5cfcbd9e
+      internalID: 1959586337
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: pumpKid_Run_19
+      rect:
+        serializedVersion: 2
+        x: 1776
+        y: 457
+        width: 4
+        height: 17
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 3db62ef63f89646459a318bc92dc8265
+      internalID: -1852210108
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: pumpKid_Run_20
+      rect:
+        serializedVersion: 2
+        x: 1302
+        y: 417
+        width: 32
+        height: 11
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 5df5abd8ef6304786bf6249b2ac3262e
+      internalID: -1745691661
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: pumpKid_Run_21
+      rect:
+        serializedVersion: 2
+        x: 1315
+        y: 406
+        width: 37
+        height: 4
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 6f72bed2216d84fba8e917e1d3777df4
+      internalID: -1360366781
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: pumpKid_Run_22
+      rect:
+        serializedVersion: 2
+        x: 1305
+        y: 398
+        width: 12
+        height: 5
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: e2e7854b646564b92bef7517ca281d34
+      internalID: 2099916374
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: pumpKid_Run_23
+      rect:
+        serializedVersion: 2
+        x: 417
+        y: 368
+        width: 5
+        height: 13
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: d11713760722d48c1ad0121262eb0e17
+      internalID: 1154425058
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: pumpKid_Run_24
+      rect:
+        serializedVersion: 2
+        x: 426
+        y: 379
+        width: 5
+        height: 6
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 96386f9db8e9248f6903ae9fb0ac3a73
+      internalID: -496922085
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: pumpKid_Run_25
+      rect:
+        serializedVersion: 2
+        x: 1538
+        y: 362
+        width: 43
+        height: 24
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 82483e3435fab4f1a8fd1795a19467ba
+      internalID: 1526392075
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: pumpKid_Run_26
+      rect:
+        serializedVersion: 2
+        x: 230
+        y: 369
+        width: 15
+        height: 6
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 725ac5e54d63c4009814898c2dd342a1
+      internalID: -349183952
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: pumpKid_Run_28
+      rect:
+        serializedVersion: 2
+        x: 244
+        y: 356
+        width: 74
+        height: 10
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 3c40cb334affe4229bb3c3682f20e362
+      internalID: -252819788
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: pumpKid_Run_29
+      rect:
+        serializedVersion: 2
+        x: 382
+        y: 357
+        width: 10
+        height: 12
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 4e5651fbf847b4c5f97874ccac956b44
+      internalID: -1717380470
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: pumpKid_Run_30
+      rect:
+        serializedVersion: 2
+        x: 951
+        y: 355
+        width: 10
+        height: 6
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 74409c51f309b44f5a40f0b64696698d
+      internalID: -127248039
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: pumpKid_Run_31
+      rect:
+        serializedVersion: 2
+        x: 1183
+        y: 358
+        width: 5
+        height: 4
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 8faeb7c6d73dd48ef901dd0ded6908d0
+      internalID: -2015248264
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: pumpKid_Run_32
+      rect:
+        serializedVersion: 2
+        x: 857
+        y: 329
+        width: 23
+        height: 23
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 2245abc69f8854294b9120a9d25a33bb
+      internalID: -1954540646
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: pumpKid_Run_33
+      rect:
+        serializedVersion: 2
+        x: 1811
+        y: 347
+        width: 11
+        height: 6
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 319e4249d3f724337ad3db411b8ac63c
+      internalID: 119054864
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    physicsShape: []
+    bones: []
+    spriteID: 5e97eb03825dee720800000000000000
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    nameFileIdTable:
+      pumpKid_Run_26: -349183952
+      pumpKid_Run_28: -252819788
+      pumpKid_Run_13: 1548811766
+      pumpKid_Run_0: -1211208541
+      pumpKid_Run_7: -2094274549
+      pumpKid_Run_32: -1954540646
+      pumpKid_Run_9: -1657412422
+      pumpKid_Run_31: -2015248264
+      pumpKid_Run_24: -496922085
+      pumpKid_Run_19: -1852210108
+      pumpKid_Run_23: 1154425058
+      pumpKid_Run_33: 119054864
+      pumpKid_Run_22: 2099916374
+      pumpKid_Run_3: -252111193
+      pumpKid_Run_16: -1871976625
+      pumpKid_Run_18: 1959586337
+      pumpKid_Run_8: 539356659
+      pumpKid_Run_12: 472129110
+      pumpKid_Run_14: -1170410288
+      pumpKid_Run_11: 1399103547
+      pumpKid_Run_2: 333600833
+      pumpKid_Run_10: 1948250680
+      pumpKid_Run_6: 1963930627
+      pumpKid_Run_17: -55317127
+      pumpKid_Run_1: -409657606
+      pumpKid_Run_25: 1526392075
+      pumpKid_Run_27: -1939786566
+      pumpKid_Run_29: -1717380470
+      pumpKid_Run_4: 464884842
+      pumpKid_Run_21: -1360366781
+      pumpKid_Run_20: -1745691661
+      pumpKid_Run_5: 1375412973
+      pumpKid_Run_30: -127248039
+      pumpKid_Run_15: 1096365674
+  spritePackingTag: 
+  pSDRemoveMatte: 0
+  pSDShowRemoveMatteOption: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
