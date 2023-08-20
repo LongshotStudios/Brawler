@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -25,11 +26,14 @@ public class PlayerControl2D : MonoBehaviour
         if (lastInput.x != 0) {
             spriteRenderer.flipX = lastInput.x < 0;
         }
-    } 
-    
+    }
+
     private void FixedUpdate()
     {
         rb.MovePosition(rb.position + lastInput * walkSpeed * Time.fixedDeltaTime);
+        var order = InteractionLayerManager.instance.DetermineOrder(rb.position);
+        spriteRenderer.sortingOrder = -order;
+        gameObject.layer = InteractionLayerManager.instance.orderToLayer(order);
     }
 
     private void OnMovement(InputValue value)
