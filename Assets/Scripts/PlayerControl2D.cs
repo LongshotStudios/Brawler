@@ -31,9 +31,6 @@ public class PlayerControl2D : MonoBehaviour
     private void FixedUpdate()
     {
         rb.MovePosition(rb.position + lastInput * walkSpeed * Time.fixedDeltaTime);
-        var order = InteractionLayerManager.instance.DetermineOrder(rb.position);
-        spriteRenderer.sortingOrder = -order;
-        gameObject.layer = InteractionLayerManager.instance.orderToLayer(order);
     }
 
     private void OnMovement(InputValue value)
