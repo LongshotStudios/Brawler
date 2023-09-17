@@ -35,7 +35,13 @@ public class PlayerControl2D : MonoBehaviour
 
     private void OnMovement(InputValue value)
     {
-       lastInput = value.Get<Vector2>();
+       OnMovementVector(value.Get<Vector2>());
+    }
+
+    private void OnMovementVector(Vector2 value)
+    {
+        Debug.Log(gameObject.name + " movement command is " + value);
+        lastInput = value;
     }
 
     private void OnAttackQuick()
