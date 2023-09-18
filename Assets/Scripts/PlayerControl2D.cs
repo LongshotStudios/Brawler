@@ -40,7 +40,6 @@ public class PlayerControl2D : MonoBehaviour
 
     private void OnMovementVector(Vector2 value)
     {
-        Debug.Log(gameObject.name + " movement command is " + value);
         lastInput = value;
     }
 
