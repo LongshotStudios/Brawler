@@ -206,6 +206,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   walkSpeed: 5
+  rollSpeed: 8
 --- !u!114 &115989702
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1267,6 +1268,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   walkSpeed: 3.5
+  rollSpeed: 1
 --- !u!114 &1798402877
 MonoBehaviour:
   m_ObjectHideFlags: 0

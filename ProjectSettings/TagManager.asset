@@ -26,7 +26,7 @@ TagManager:
   - 
   - Boundary
   - Enemy
-  - Interaction 4
+  - RollInteraction
   - Interaction 3
   - Interaction 2
   - Interaction 1
