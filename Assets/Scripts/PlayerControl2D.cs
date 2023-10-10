@@ -1,7 +1,3 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -12,6 +8,8 @@ public class PlayerControl2D : MonoBehaviour
     private Rigidbody2D rb;
     private Animator animator;
     private SpriteRenderer spriteRenderer;
+    public float rollSpeed = 1.0f;
+    private bool isRolling = false;
 
     private void Awake()
     {
@@ -30,7 +28,8 @@ public class PlayerControl2D : MonoBehaviour
 
     private void FixedUpdate()
     {
-        rb.MovePosition(rb.position + lastInput * walkSpeed * Time.fixedDeltaTime);
+        var speed = isRolling ? rollSpeed : walkSpeed;
+        rb.MovePosition(rb.position + lastInput * speed * Time.fixedDeltaTime);
     }
 
     private void OnMovement(InputValue value)
@@ -56,5 +55,19 @@ public class PlayerControl2D : MonoBehaviour
     private void OnRoll()
     {  
         animator.SetTrigger("Roll");
+    }
+
+    public void RollFrameStart()
+    {       
+        Debug.Log("Roll frame start");
+        isRolling = true;
+        gameObject.layer = LayerMask.NameToLayer("RollInteraction");
+    }
+
+    public void RollFrameFinished()
+    {
+        Debug.Log("Roll frame finished");
+        isRolling = false;
+        gameObject.layer = LayerMask.NameToLayer("Default");
     }
 }

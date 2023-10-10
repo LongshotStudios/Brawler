@@ -4,6 +4,12 @@
 EditorBuildSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 2
-  m_Scenes: []
+  m_Scenes:
+  - enabled: 1
+    path: Assets/Scenes/NetworkStartup.unity
+    guid: 1fd732ef4412f3b4589c9e67ae5b40da
+  - enabled: 1
+    path: Assets/Scenes/Scroller.unity
+    guid: 33c4e01f0c346400e8f29cb61bb53da5
   m_configObjects:
     com.unity.input.settings: {fileID: 11400000, guid: 8225833971399480dabebb4fb61ff551, type: 2}
