@@ -6,7 +6,7 @@ public class CameraFollow : MonoBehaviour
 {
     public Vector2 scrollMin;
     public Vector2 scrollMax;
-    public Transform followTarget;
+    public Transform[] followTargets;
     public float followSpeed;
     private Camera cam;
 
@@ -18,7 +18,13 @@ public class CameraFollow : MonoBehaviour
 
     private void Update()
     {
-        var screenTarget = cam.WorldToViewportPoint(followTarget.position);
+        var position = followTargets[0].position;
+        for (int i = 1; i < followTargets.Length; i++) {
+            position += followTargets[i].position;
+        }
+        position /= followTargets.Length;
+        
+        var screenTarget = cam.WorldToViewportPoint(position);
         var move = screenTarget - new Vector3(0.5f, 0.5f, screenTarget.z);
         if (move.x > 0.25f) {
             move.x = 1;
@@ -27,6 +33,7 @@ public class CameraFollow : MonoBehaviour
         } else {
             move.x = 0;
         }
+        
         var pos = transform.position + move * followSpeed * Time.deltaTime;
         pos.x = Mathf.Clamp(pos.x, scrollMin.x, scrollMax.x);
         pos.y = Mathf.Clamp(pos.y, scrollMin.y, scrollMax.y);

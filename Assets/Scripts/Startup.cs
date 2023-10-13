@@ -9,6 +9,7 @@ using Unity.Services.Relay;
 using Unity.Services.Relay.Models;
 using TMPro;
 using Unity.Services.Core;
+using UnityEngine.SceneManagement;
 
 public class Startup : MonoBehaviour
 {
@@ -24,6 +25,9 @@ public class Startup : MonoBehaviour
     public TextMeshProUGUI hostCode;
     public Button joinButton;
     public TMP_InputField joinField;
+    public Button startButton;
+
+    public string nextScene;
     
     private string playerId;
     private Allocation allocation;
@@ -31,20 +35,18 @@ public class Startup : MonoBehaviour
     
     private async void Start()
     {
+        startButton.gameObject.SetActive(false);
         await UnityServices.InitializeAsync();
         
         await AuthenticationService.Instance.SignInAnonymouslyAsync();
         playerId = AuthenticationService.Instance.PlayerId;
     } 
     
-    private void Update()
-    {
-        
-    }
     public async void OnHost()
     {
         joinButton.gameObject.SetActive(false); 
         joinField.gameObject.SetActive(false);
+        startButton.gameObject.SetActive(true);
         
         allocation = await RelayService.Instance.CreateAllocationAsync(2, null);
         var relayServerData = new RelayServerData(allocation, "udp");
@@ -68,4 +70,8 @@ public class Startup : MonoBehaviour
         NetworkManager.Singleton.StartClient();
     }
 
+    public void OnStartGame()
+    {
+        NetworkManager.Singleton.SceneManager.LoadScene(nextScene, LoadSceneMode.Single);
+    }
 }

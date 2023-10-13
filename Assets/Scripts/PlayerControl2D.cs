@@ -1,7 +1,7 @@
+using Unity.Netcode;
 using UnityEngine;
-using UnityEngine.InputSystem;
 
-public class PlayerControl2D : MonoBehaviour
+public class PlayerControl2D : NetworkBehaviour
 {
     public float walkSpeed = 1.0f;
     private Vector2 lastInput;
@@ -18,6 +18,21 @@ public class PlayerControl2D : MonoBehaviour
         spriteRenderer = GetComponent<SpriteRenderer>();
     }
 
+    public override void OnNetworkSpawn()
+    {
+        NetworkManager.NetworkTickSystem.Tick += Tick;
+    }
+
+    public override void OnNetworkDespawn()
+    {
+        NetworkManager.NetworkTickSystem.Tick -= Tick;
+    }
+
+    private void Tick()
+    {
+        Debug.Log("Network server tick " + NetworkManager.ServerTime.Tick + " local tick " + NetworkManager.LocalTime.Tick);
+    }
+
     private void Update()
     {
         animator.SetFloat("Speed", lastInput.magnitude);
@@ -32,27 +47,22 @@ public class PlayerControl2D : MonoBehaviour
         rb.MovePosition(rb.position + lastInput * speed * Time.fixedDeltaTime);
     }
 
-    private void OnMovement(InputValue value)
-    {
-       OnMovementVector(value.Get<Vector2>());
-    }
-
-    private void OnMovementVector(Vector2 value)
+    public void OnMovementVector(Vector2 value)
     {
         lastInput = value;
     }
 
-    private void OnAttackQuick()
+    public void OnAttackQuick()
     {
         animator.SetTrigger("AttackQuick");
     }
     
-    private void OnAttackStrong()
+    public void OnAttackStrong()
     {
         animator.SetTrigger("AttackStrong");
     }
     
-    private void OnRoll()
+    public void OnRoll()
     {  
         animator.SetTrigger("Roll");
     }
