@@ -30,7 +30,7 @@ public class PlayerControl2D : NetworkBehaviour
 
     private void Tick()
     {
-        Debug.Log("Network server tick " + NetworkManager.ServerTime.Tick + " local tick " + NetworkManager.LocalTime.Tick);
+        Debug.Log("Network server tick " + NetworkManager.ServerTime.Tick + " local tick " + NetworkManager.LocalTime.Tick + " latency " + NetworkManager.);
     }
 
     private void Update()

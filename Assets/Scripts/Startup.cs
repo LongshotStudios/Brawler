@@ -1,3 +1,5 @@
+using System.Linq;
+using System.Net.Mime;
 using System.Transactions;
 using UnityEngine;
 using UnityEngine.UI;
@@ -25,6 +27,7 @@ public class Startup : MonoBehaviour
     public TextMeshProUGUI hostCode;
     public Button joinButton;
     public TMP_InputField joinField;
+    public TextMeshProUGUI connections;
     public Button startButton;
 
     public string nextScene;
@@ -40,13 +43,30 @@ public class Startup : MonoBehaviour
         
         await AuthenticationService.Instance.SignInAnonymouslyAsync();
         playerId = AuthenticationService.Instance.PlayerId;
-    } 
+    }
+
+    private void Update()
+    {
+        connections.text = "";
+        if (!NetworkManager.Singleton.IsHost)
+        {
+            if (NetworkManager.Singleton.IsConnectedClient)
+            {
+                connections.text = "Connected to host!";
+            }
+        }
+        else
+        {
+            var clients = NetworkManager.Singleton.ConnectedClients.Count;
+            connections.text = "Connections: " + clients;
+            startButton.gameObject.SetActive(true);
+        }
+    }
     
     public async void OnHost()
     {
         joinButton.gameObject.SetActive(false); 
         joinField.gameObject.SetActive(false);
-        startButton.gameObject.SetActive(true);
         
         allocation = await RelayService.Instance.CreateAllocationAsync(2, null);
         var relayServerData = new RelayServerData(allocation, "udp");
