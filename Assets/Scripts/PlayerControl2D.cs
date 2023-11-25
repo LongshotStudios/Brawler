@@ -43,6 +43,14 @@ public class PlayerControl2D : NetworkBehaviour
         NetworkedPhysicsController.instance.beforeSimulate -= Tick;
     }
 
+    private void Update()
+    {
+        animator.SetFloat("Speed", lastInput.magnitude);
+        if (lastInput.x != 0) {
+            spriteRenderer.flipX = lastInput.x < 0;
+        }
+    }
+
     private void Tick(int tick)
     {
         Debug.Log("Network server tick " + NetworkManager.ServerTime.Tick + " local tick " + NetworkManager.LocalTime.Tick);
@@ -76,6 +84,8 @@ public class PlayerControl2D : NetworkBehaviour
             animator.SetTrigger("Roll");
         }
         lastQuick = lastStrong = lastRoll = false;
+
+        RemoveOldHistory(tick - NetworkedPhysicsController.instance.maxStateHistory);
     }
 
     private void StoreCommandSetLocal(int tick, Vector2 lastInput, bool quick, bool strong, bool roll)
@@ -98,6 +108,13 @@ public class PlayerControl2D : NetworkBehaviour
         return commandHistory[last];
     }
 
+    private void RemoveOldHistory(int tick)
+    {
+        while (commandHistory.Count > 0 && commandHistory[0].tick < tick) {
+            commandHistory.RemoveAt(0);
+        }
+    }
+
     [ServerRpc]
     private void StoreCommandSetServerRpc(int tick, Vector2 lastInput, bool quick, bool strong, bool roll)
     {
@@ -113,15 +130,6 @@ public class PlayerControl2D : NetworkBehaviour
             StoreCommandSetLocal(tick, lastInput, quick, strong, roll);
         }
     }
-
-    private void Update()
-    {
-        animator.SetFloat("Speed", lastInput.magnitude);
-        if (lastInput.x != 0) {
-            spriteRenderer.flipX = lastInput.x < 0;
-        }
-    }
-
     public void OnMovementVector(Vector2 value)
     {
         lastInput = value;
