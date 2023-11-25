@@ -67,18 +67,21 @@ public class NetworkedPhysicsController : MonoBehaviour
     private void NetworkTick()
     {
         Debug.Log("Ticking the physics via network");
-        var tick = NetworkManager.Singleton.ServerTime.Tick;
+        var tick = NetworkManager.Singleton.LocalTime.Tick;
         beforeSimulate?.Invoke(tick);
         StoreState(tick);
         Physics.Simulate(NetworkManager.Singleton.LocalTime.FixedDeltaTime);
         afterSimulate?.Invoke(tick);
         RemoveOldStates(tick - maxStateHistory);
+        
+        // TODO server sends the stored state down
     }
 
     private void StoreState(int tick)
     {
         PreservedState state = new PreservedState();
         int count =  registeredBodies.Count;
+        state.tick = tick;
         state.bodies = new Rigidbody2D[count];
         state.positions = new Vector2[count];
         state.rotations = new float[count];
