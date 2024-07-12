@@ -45,7 +45,7 @@ public class PlayerControl2D : NetworkBehaviour
 
     public override void OnNetworkSpawn()
     {
-        NetworkedPhysicsController.instance.initialNetworkTick += InitialTick;
+        NetworkedPhysicsController.instance.startofNetworkTick += StartofTick;
         NetworkedPhysicsController.instance.beforeSimulate += BeforeSimulate;
         NetworkedPhysicsController.instance.afterSimulate += AfterSimulate;
         NetworkedPhysicsController.instance.beforeRewindSim += BeforeRewind;
@@ -58,7 +58,7 @@ public class PlayerControl2D : NetworkBehaviour
 
     public override void OnNetworkDespawn()
     {
-        NetworkedPhysicsController.instance.initialNetworkTick -= InitialTick;
+        NetworkedPhysicsController.instance.startofNetworkTick -= StartofTick;
         NetworkedPhysicsController.instance.beforeSimulate -= BeforeSimulate;
         NetworkedPhysicsController.instance.afterSimulate -= AfterSimulate;
         NetworkedPhysicsController.instance.beforeRewindSim -= BeforeRewind;
@@ -94,14 +94,18 @@ public class PlayerControl2D : NetworkBehaviour
         lastQuick = lastStrong = lastRoll = false;
     }
 
-    private void InitialTick(int tick)
+    private void StartofTick(int tick)
     {
         if (IsOwner)
         {
             // save/send out our current command state here before any rewinds etc
             StoreCommandSetLocal(tick, lastInput, lastQuick, lastStrong, lastRoll);
-            StoreCommandSetServerRpc(tick, lastInput, lastQuick, lastStrong, lastRoll);
-            Debug.Log(gameObject.name + ": client storing/rebroadcasting command for tick " + tick + " " + lastInput +
+            if (NetworkManager.IsServer) {
+                StoreCommandSetClientRpc(tick, lastInput, lastQuick, lastStrong, lastRoll);
+            } else {
+                StoreCommandSetServerRpc(tick, lastInput, lastQuick, lastStrong, lastRoll);
+            }
+            Debug.Log(gameObject.name + ": local storing command for tick " + tick + " " + lastInput +
                       " " + lastQuick + " " + lastStrong + " " + lastRoll);
         }
     }
@@ -118,7 +122,12 @@ public class PlayerControl2D : NetworkBehaviour
         lastQuick = commandSet.quick;
         lastStrong = commandSet.strong;
         lastRoll = commandSet.roll;
-        
+
+        if (state.tick < 0 || commandSet.tick < 0) {
+            Debug.LogWarning("No valid state or command to simulate with at tick " + tick + ", ignoring until we have one for " + gameObject.name, gameObject);
+            return;
+        }
+
         Debug.Log(gameObject.name + ": Before sim " + tick + " pos " + rb.position + " vel " + rb.velocity + " input " + lastInput);
             
         LocalSim();
@@ -131,7 +140,7 @@ public class PlayerControl2D : NetworkBehaviour
         Debug.Log(gameObject.name + ": After sim " + tick + " pos " + rb.position + " vel " + rb.velocity + " input " + lastInput);
         // store the state for later rewind
         StoreStateSetLocal(tick + 1, rb.position, rb.velocity, spriteRenderer.flipX);
-        if (IsServer) {
+        if (NetworkManager.IsServer) {
             // Send the latest state from the server so the clients can update
             UpdateStateSetClientRpc(tick + 1, rb.position, rb.velocity, spriteRenderer.flipX);
         }
@@ -158,7 +167,7 @@ public class PlayerControl2D : NetworkBehaviour
         // replace state history at tick with the new info
         StoreStateSetLocal(tick + 1, rb.position, rb.velocity, spriteRenderer.flipX);
         /*  Not sure we want to do this, but the server will rewind if it gets old commands
-        if (IsServer) {
+        if (NetworkManager.IsServer) {
             // Send the latest state from the server so the clients can update
             UpdateStateSetClientRpc(tick + 1, rb.position, rb.velocity, spriteRenderer.flipX);
         }
@@ -215,7 +224,7 @@ public class PlayerControl2D : NetworkBehaviour
             stateHistory[0].position = pos;
             stateHistory[0].velocity = vel;
             stateHistory[0].flipX = flipX;
-            // NetworkedPhysicsController.instance.RequestReplayFromTick(tick);
+            NetworkedPhysicsController.instance.RequestReplayFromTick(tick);
         }
     }
 
@@ -232,6 +241,12 @@ public class PlayerControl2D : NetworkBehaviour
 
     private CommandSet FindOrExtrapolateCommandSet(int tick)
     {
+        if (commandHistory.Count == 0) {
+            Debug.LogWarning("No command history by the time we're looking for one");
+            var cmd = new CommandSet();
+            cmd.tick = -1;
+            return cmd;
+        } 
         int last = commandHistory.Count - 1;
         while (last > 0 && tick < commandHistory[last].tick) {
             last--;
@@ -242,6 +257,12 @@ public class PlayerControl2D : NetworkBehaviour
     
     private StateSet FindOrExtrapolateStateSet(int tick)
     {
+        if (stateHistory.Count == 0) {
+            Debug.LogWarning("No state history to work with when searching for one");
+            var state = new StateSet();
+            state.tick = -1;
+            return state;
+        }
         int last = stateHistory.Count - 1;
         while (last > 0 && tick < stateHistory[last].tick) {
             last--;
@@ -256,7 +277,8 @@ public class PlayerControl2D : NetworkBehaviour
             stateHistory.RemoveAt(0);
         } 
         
-        while (commandHistory.Count > 0 && commandHistory[0].tick < tick) {
+        // remove command history older than one step back
+        while (commandHistory.Count > 0 && commandHistory[0].tick < tick - 1) {
             commandHistory.RemoveAt(0);
         }
     }
@@ -275,8 +297,9 @@ public class PlayerControl2D : NetworkBehaviour
     [ClientRpc]
     private void StoreCommandSetClientRpc(int tick, Vector2 lastInput, bool quick, bool strong, bool roll)
     {
-        if (!IsOwner && !IsServer)
+        if (!IsOwner && !NetworkManager.IsServer)
         {
+            Debug.Log(gameObject.name + ": client storing command for tick " + tick + " " + lastInput + " " + quick + " " + strong + " " + roll);
             StoreCommandSetLocal(tick, lastInput, quick, strong, roll);
         }
     }

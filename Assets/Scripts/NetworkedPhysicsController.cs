@@ -9,15 +9,15 @@ public class NetworkedPhysicsController : MonoBehaviour
 {
     public delegate void Update(int tick);
 
-    public event Update initialNetworkTick;
-    public event Update finalNetworkTick;
+    public event Update startofNetworkTick;
+    public event Update endofNetworkTick;
     public event Update beforeSimulate;
     public event Update afterSimulate;
     public event Update beforeRewindSim;
     public event Update afterRewindSim;
 
     public int maxStateHistory = 24;
-    private int rewindTick = -1;
+    private int rewindTick = Int32.MaxValue;
     
     private List<Rigidbody2D> registeredBodies = new List<Rigidbody2D>();
 
@@ -48,7 +48,6 @@ public class NetworkedPhysicsController : MonoBehaviour
     {
         Physics2D.simulationMode = SimulationMode2D.Script;
         NetworkManager.Singleton.NetworkTickSystem.Tick += NetworkTick;
-        rewindTick = NetworkManager.Singleton.LocalTime.Tick;
     }
 
     private void OnDestroy()
@@ -59,33 +58,37 @@ public class NetworkedPhysicsController : MonoBehaviour
 
     private void NetworkTick()
     {
-        Debug.Log("Ticking the physics via network");
         var now = NetworkManager.Singleton.LocalTime.Tick;
+        Debug.Log("Ticking the physics via network at tick " + now + " realtime " + Time.realtimeSinceStartup);
 
-        initialNetworkTick?.Invoke(now);
-        
+        startofNetworkTick?.Invoke(now);
+
+        if (rewindTick < now) {
+            Debug.Log("Rewinding tick from " + rewindTick + " to " + now);
+        }
+
         while (rewindTick < now) {
-            Debug.Log("Rewinding tick " + rewindTick);
             beforeRewindSim?.Invoke(rewindTick);
             Physics2D.Simulate(NetworkManager.Singleton.LocalTime.FixedDeltaTime);
             afterRewindSim?.Invoke(rewindTick);
             rewindTick++;
         }
         
-        Debug.Log("Simulating tick " + rewindTick);
+        Debug.Log("Simulating tick " + now);
         beforeSimulate?.Invoke(now);
         Physics2D.Simulate(NetworkManager.Singleton.LocalTime.FixedDeltaTime);
         afterSimulate?.Invoke(now);
         
         // set it to the next tick so that we don't rewind, unless requested
-        rewindTick++;
+        rewindTick = int.MaxValue;
         
-        finalNetworkTick?.Invoke(now);
+        endofNetworkTick?.Invoke(now);
     }
 
     public void RequestReplayFromTick(int tick)
     {
-        if (tick < rewindTick) {
+        // Only replay from the latest request (it means we have a recent server state)
+        if (rewindTick >= int.MaxValue || tick > rewindTick) {
             rewindTick = tick;
         }
     }
