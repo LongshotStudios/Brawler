@@ -26,6 +26,7 @@ public class PlayerControl2D : NetworkBehaviour
         public bool flipX;
     }
     private List<StateSet> stateHistory = new List<StateSet>();
+    private List<StateSet> serverHistory = new List<StateSet>();
 
     private class CommandSet
     {
@@ -132,15 +133,15 @@ public class PlayerControl2D : NetworkBehaviour
         spriteRenderer.flipX = state.flipX;
 
         if (state.tick < 0) {
-            Debug.LogError("There is no state stored, that's weird");
+            Debug.LogError(gameObject.name + ": There is no state stored for we can't simulate!");
             return;
         }
 
-        // Debug.Log(gameObject.name + ": Before sim " + tick + " pos " + rb.position + " vel " + rb.velocity + " input " + lastInput);
+        // Debug.Log(gameObject.name + ": Before sim " + lastTick + " pos " + rb.position + " vel " + rb.velocity + " input " + lastInput);
             
         LocalSim();
         
-        // Debug.Log(gameObject.name + ": After local sim " + tick + " pos " + rb.position + " vel " + rb.velocity + " input " + lastInput);
+        // Debug.Log(gameObject.name + ": After local sim " + lastTick + " pos " + rb.position + " vel " + rb.velocity + " input " + lastInput);
     }
 
     private void AfterSimulate(int tick)
@@ -182,12 +183,10 @@ public class PlayerControl2D : NetworkBehaviour
             return;
         }
         StoreStateSetLocal(lastTick + 1, rb.position, rb.velocity, spriteRenderer.flipX);
-        /*  Not sure we want to do this, but the server will rewind if it gets old commands
         if (NetworkManager.IsServer) {
             // Send the latest state from the server so the clients can update
-            UpdateStateSetClientRpc(tick + 1, rb.position, rb.velocity, spriteRenderer.flipX);
+            UpdateStateSetClientRpc(lastTick + 1, rb.position, rb.velocity, spriteRenderer.flipX);
         }
-        */
     }
 
     private void StoreStateSetLocal(int tick, Vector2 pos,  Vector2 vel, bool flipX)
@@ -209,38 +208,67 @@ public class PlayerControl2D : NetworkBehaviour
         stateHistory.Add(state);
     }
 
+    private void StoreServerSetLocal(int tick, Vector2 pos, Vector2 vel, bool flipX)
+    {
+        StateSet state = new StateSet();
+        state.tick = tick;
+        state.position = pos;
+        state.velocity = vel;
+        state.flipX = flipX;
+        serverHistory.Add(state);
+    }
+
     [ClientRpc]
     private void UpdateStateSetClientRpc(int tick, Vector2 pos, Vector2 vel, bool flipX)
     {
-        if (tick < stateHistory[0].tick)
+        if (serverHistory.Count > 0 && tick < serverHistory[0].tick)
         {
             // it's old news, ignore it
             return;
         } 
         
-        Debug.Log(gameObject.name + ": client receiving tick update " + tick);
+        // Debug.Log(gameObject.name + ": client receiving tick update " + tick);
         
-        // remove any state older than this, this tick will be matched with index 0
-        RemoveOldHistory(tick);
-        
-        // compare with our local copy for position delta, request rewind
-        if (stateHistory.Count == 0 || stateHistory[0].tick != tick)
-        {
-            Debug.LogWarning(gameObject.name + ": state missing: " + tick);
-            var state = new StateSet();
-            // leave it empty force the mismatch, unless it really is 0 then that's probably fine
-            stateHistory.Insert(0, state);
+        StoreServerSetLocal(tick, pos, vel, flipX);
+
+        while (serverHistory[0].tick < stateHistory[0].tick) {
+            serverHistory.RemoveAt(0);
         }
-        if ((stateHistory[0].position - pos).sqrMagnitude > 0.25f
-            || (stateHistory[0].velocity - vel).sqrMagnitude > 0.25f
-            || stateHistory[0].flipX != flipX) 
-        {
-            Debug.LogWarning(gameObject.name + ": state mismatch: (local) " + " " + stateHistory[0].position + " " + stateHistory[0].velocity 
-                     + " (remote) " + " " + pos + " " + vel);
-            stateHistory[0].position = pos;
-            stateHistory[0].velocity = vel;
-            stateHistory[0].flipX = flipX;
-            NetworkedPhysicsController.instance.RequestReplayFromTick(tick);
+
+        // if our local history is somehow was behind the server, move till we catch up
+        while (stateHistory.Count > 1 && stateHistory[0].tick != serverHistory[0].tick) {
+            stateHistory.RemoveAt(0);
+        }
+
+        /* remove hte command history?
+        while (commandHistory[0].tick < stateHistory[0].tick) {
+            commandHistory.RemoveAt(0);
+        }
+        */
+
+        if (stateHistory[0].tick != serverHistory[0].tick) {
+            return;
+        }
+        
+        while (serverHistory.Count > 1 && stateHistory.Count > 1) {
+            if ((stateHistory[0].position - serverHistory[0].position).sqrMagnitude > 0.25f
+                || (stateHistory[0].velocity - serverHistory[0].velocity).sqrMagnitude > 0.25f
+                || stateHistory[0].flipX != serverHistory[0].flipX)
+            {
+                Debug.LogWarning(gameObject.name + ": state mismatch tick " + stateHistory[0].tick
+                                 + ": (local) " + " " + stateHistory[0].position + " " + stateHistory[0].velocity
+                                 + " (remote) " + " " + serverHistory[0].position + " " + serverHistory[0].velocity);
+                stateHistory[0].position = serverHistory[0].position;
+                stateHistory[0].velocity = serverHistory[0].velocity;
+                stateHistory[0].flipX = serverHistory[0].flipX;
+                NetworkedPhysicsController.instance.RequestReplayFromTick(stateHistory[0].tick);
+                break;
+            }
+            else
+            {
+                stateHistory.RemoveAt(0);
+                serverHistory.RemoveAt(0);
+            }
         }
     }
 
@@ -287,18 +315,6 @@ public class PlayerControl2D : NetworkBehaviour
         return stateHistory[last];
     }
 
-    private void RemoveOldHistory(int tick)
-    {
-        while (stateHistory.Count > 0 && stateHistory[0].tick < tick) {
-            stateHistory.RemoveAt(0);
-        } 
-        
-        // remove command history older than one step back
-        while (commandHistory.Count > 0 && commandHistory[0].tick < tick - 1) {
-            commandHistory.RemoveAt(0);
-        }
-    }
-
     [ServerRpc]
     private void StoreCommandSetServerRpc(int tick, Vector2 lastInput, bool quick, bool strong, bool roll)
     {
@@ -315,7 +331,7 @@ public class PlayerControl2D : NetworkBehaviour
     {
         if (!IsOwner && !NetworkManager.IsServer)
         {
-            Debug.Log(gameObject.name + ": client storing command for tick " + tick);
+            // Debug.Log(gameObject.name + ": client storing command for tick " + tick);
             StoreCommandSetLocal(tick, lastInput, quick, strong, roll);
         }
     }
