@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
-using UnityEngine.UIElements;
 
 public class PlayerControl2D : NetworkBehaviour
 {
@@ -67,15 +66,6 @@ public class PlayerControl2D : NetworkBehaviour
         NetworkedPhysicsController.instance.afterRewindSim -= AfterRewind;
     }
 
-    private void Update()
-    {
-        animator.SetFloat("Speed", lastInput.magnitude);
-        // If stopped, don't flip otherwise we always stop in one direction (right in this case)
-        if (lastInput.x != 0) {
-            spriteRenderer.flipX = lastInput.x < 0;
-        }
-    }
-
     private void LocalSim()
     {
         // sets up the simulation even just before its called by the network physics
@@ -94,6 +84,12 @@ public class PlayerControl2D : NetworkBehaviour
             animator.SetTrigger("Roll");
         }
         lastQuick = lastStrong = lastRoll = false;
+        
+        animator.SetFloat("Speed", lastInput.magnitude);
+        // If stopped, don't flip otherwise we always stop in one direction (right in this case)
+        if (lastInput.x != 0) {
+            spriteRenderer.flipX = lastInput.x < 0;
+        }
     }
 
     private void StartofTick(int tick)
@@ -240,11 +236,9 @@ public class PlayerControl2D : NetworkBehaviour
             stateHistory.RemoveAt(0);
         }
 
-        /* remove hte command history?
-        while (commandHistory[0].tick < stateHistory[0].tick) {
+        while (commandHistory[0].tick < stateHistory[0].tick - 1) {
             commandHistory.RemoveAt(0);
         }
-        */
 
         if (stateHistory[0].tick != serverHistory[0].tick) {
             return;
