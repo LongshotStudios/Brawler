@@ -6,6 +6,7 @@ using UnityEngine.UIElements;
 public class PlayerControl2D : NetworkBehaviour
 {
     public float walkSpeed = 1.0f;
+    private int lastTick;
     private Vector2 lastInput;
     private bool lastQuick = false;
     private bool lastStrong = false;
@@ -118,14 +119,14 @@ public class PlayerControl2D : NetworkBehaviour
             return;
         }
         
-        // Resimulate from the most recent command set we know
-        // TODO need to store this state this way tick = commandSet.tick;
+        // Resimulate from the most recent command set we know (what if we already did? What about if we missed an older one?)
+        lastTick = commandSet.tick;
         lastInput = commandSet.lastInput;
         lastQuick = commandSet.quick;
         lastStrong = commandSet.strong;
         lastRoll = commandSet.roll;
 
-        var state = FindOrExtrapolateStateSet(tick);
+        var state = FindOrExtrapolateStateSet(lastTick);
         rb.position = state.position;
         rb.velocity = state.velocity;
         spriteRenderer.flipX = state.flipX;
@@ -146,22 +147,21 @@ public class PlayerControl2D : NetworkBehaviour
     {
         // Debug.Log(gameObject.name + ": After sim " + tick + " pos " + rb.position + " vel " + rb.velocity + " input " + lastInput);
         // store the state for later rewind
-        StoreStateSetLocal(tick + 1, rb.position, rb.velocity, spriteRenderer.flipX);
+        StoreStateSetLocal(lastTick + 1, rb.position, rb.velocity, spriteRenderer.flipX);
         if (NetworkManager.IsServer) {
             // Send the latest state from the server so the clients can update
-            UpdateStateSetClientRpc(tick + 1, rb.position, rb.velocity, spriteRenderer.flipX);
+            UpdateStateSetClientRpc(lastTick + 1, rb.position, rb.velocity, spriteRenderer.flipX);
         }
     }
 
     private void BeforeRewind(int tick)
     {
         CommandSet commandSet = FindOrExtrapolateCommandSet(tick);
-        /* TODO Need to tell the rewind not to store any state here
-        if (commandSet.tick != tick) {
-            // We don't have the commands don't bother replaying this character we're going to have to do it soon
+        lastTick = commandSet.tick;
+        if (lastTick != tick) {
+            // no point in rewinding this if we don't have the state anyway
             return;
         }
-        */
         lastInput = commandSet.lastInput;
         lastQuick = commandSet.quick;
         lastStrong = commandSet.strong;
@@ -178,7 +178,10 @@ public class PlayerControl2D : NetworkBehaviour
     private void AfterRewind(int tick)
     {
         // replace state history at tick with the new info
-        StoreStateSetLocal(tick + 1, rb.position, rb.velocity, spriteRenderer.flipX);
+        if (lastTick != tick) {
+            return;
+        }
+        StoreStateSetLocal(lastTick + 1, rb.position, rb.velocity, spriteRenderer.flipX);
         /*  Not sure we want to do this, but the server will rewind if it gets old commands
         if (NetworkManager.IsServer) {
             // Send the latest state from the server so the clients can update
@@ -215,7 +218,7 @@ public class PlayerControl2D : NetworkBehaviour
             return;
         } 
         
-        // Debug.Log(gameObject.name + " receiving tick update " + tick);
+        Debug.Log(gameObject.name + ": client receiving tick update " + tick);
         
         // remove any state older than this, this tick will be matched with index 0
         RemoveOldHistory(tick);
@@ -312,7 +315,7 @@ public class PlayerControl2D : NetworkBehaviour
     {
         if (!IsOwner && !NetworkManager.IsServer)
         {
-            // Debug.Log(gameObject.name + ": client storing command for tick " + tick + " " + lastInput + " " + quick + " " + strong + " " + roll);
+            Debug.Log(gameObject.name + ": client storing command for tick " + tick);
             StoreCommandSetLocal(tick, lastInput, quick, strong, roll);
         }
     }
