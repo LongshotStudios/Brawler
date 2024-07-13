@@ -52,7 +52,7 @@ public class PlayerControl2D : NetworkBehaviour
         NetworkedPhysicsController.instance.afterRewindSim += AfterRewind;
         
         var tick = NetworkManager.Singleton.LocalTime.Tick;
-        Debug.Log(gameObject.name + ": storing local state at start tick " + tick);
+        // Debug.Log(gameObject.name + ": storing local state at start tick " + tick);
         StoreStateSetLocal(tick, rb.position, rb.velocity, spriteRenderer.flipX);
     }
 
@@ -79,7 +79,7 @@ public class PlayerControl2D : NetworkBehaviour
         // sets up the simulation even just before its called by the network physics
         var speed = isRolling ? rollSpeed : walkSpeed;
         var delta = lastInput * speed * NetworkManager.Singleton.LocalTime.FixedDeltaTime;
-        Debug.Log(gameObject.name + ": Moving delta " + delta + " lastInput " + lastInput + " speed " + speed + " dt " + NetworkManager.Singleton.LocalTime.FixedDeltaTime);
+        // Debug.Log(gameObject.name + ": Moving delta " + delta + " lastInput " + lastInput + " speed " + speed + " dt " + NetworkManager.Singleton.LocalTime.FixedDeltaTime);
         rb.MovePosition(rb.position + delta);
         
         if (lastQuick) {
@@ -105,39 +105,46 @@ public class PlayerControl2D : NetworkBehaviour
             } else {
                 StoreCommandSetServerRpc(tick, lastInput, lastQuick, lastStrong, lastRoll);
             }
-            Debug.Log(gameObject.name + ": local storing command for tick " + tick + " " + lastInput +
-                      " " + lastQuick + " " + lastStrong + " " + lastRoll);
+            // Debug.Log(gameObject.name + ": local storing command for tick " + tick + " " + lastInput +
+                      // " " + lastQuick + " " + lastStrong + " " + lastRoll);
         }
     }
 
     private void BeforeSimulate(int tick)
     {
-        var state = FindOrExtrapolateStateSet(tick);
-        rb.position = state.position;
-        rb.velocity = state.velocity;
-        spriteRenderer.flipX = state.flipX;
-
         var commandSet = FindOrExtrapolateCommandSet(tick);
+        if (commandSet.tick < -1) {
+            Debug.LogWarning("Simulating too early I guess, no command history let's wait");
+            return;
+        }
+        
+        // Resimulate from the most recent command set we know
+        // TODO need to store this state this way tick = commandSet.tick;
         lastInput = commandSet.lastInput;
         lastQuick = commandSet.quick;
         lastStrong = commandSet.strong;
         lastRoll = commandSet.roll;
 
-        if (state.tick < 0 || commandSet.tick < 0) {
-            Debug.LogWarning("No valid state or command to simulate with at tick " + tick + ", ignoring until we have one for " + gameObject.name, gameObject);
+        var state = FindOrExtrapolateStateSet(tick);
+        rb.position = state.position;
+        rb.velocity = state.velocity;
+        spriteRenderer.flipX = state.flipX;
+
+        if (state.tick < 0) {
+            Debug.LogError("There is no state stored, that's weird");
             return;
         }
 
-        Debug.Log(gameObject.name + ": Before sim " + tick + " pos " + rb.position + " vel " + rb.velocity + " input " + lastInput);
+        // Debug.Log(gameObject.name + ": Before sim " + tick + " pos " + rb.position + " vel " + rb.velocity + " input " + lastInput);
             
         LocalSim();
         
-        Debug.Log(gameObject.name + ": After local sim " + tick + " pos " + rb.position + " vel " + rb.velocity + " input " + lastInput);
+        // Debug.Log(gameObject.name + ": After local sim " + tick + " pos " + rb.position + " vel " + rb.velocity + " input " + lastInput);
     }
 
     private void AfterSimulate(int tick)
     {
-        Debug.Log(gameObject.name + ": After sim " + tick + " pos " + rb.position + " vel " + rb.velocity + " input " + lastInput);
+        // Debug.Log(gameObject.name + ": After sim " + tick + " pos " + rb.position + " vel " + rb.velocity + " input " + lastInput);
         // store the state for later rewind
         StoreStateSetLocal(tick + 1, rb.position, rb.velocity, spriteRenderer.flipX);
         if (NetworkManager.IsServer) {
@@ -148,17 +155,23 @@ public class PlayerControl2D : NetworkBehaviour
 
     private void BeforeRewind(int tick)
     {
-        StateSet state = FindOrExtrapolateStateSet(tick);
-        rb.position = state.position;
-        rb.velocity = state.velocity;
-        spriteRenderer.flipX = state.flipX;
-
         CommandSet commandSet = FindOrExtrapolateCommandSet(tick);
+        /* TODO Need to tell the rewind not to store any state here
+        if (commandSet.tick != tick) {
+            // We don't have the commands don't bother replaying this character we're going to have to do it soon
+            return;
+        }
+        */
         lastInput = commandSet.lastInput;
         lastQuick = commandSet.quick;
         lastStrong = commandSet.strong;
         lastRoll = commandSet.roll;
         
+        StateSet state = FindOrExtrapolateStateSet(tick);
+        rb.position = state.position;
+        rb.velocity = state.velocity;
+        spriteRenderer.flipX = state.flipX;
+
         LocalSim();
     }
 
@@ -202,7 +215,7 @@ public class PlayerControl2D : NetworkBehaviour
             return;
         } 
         
-        Debug.Log(gameObject.name + " receiving tick update " + tick);
+        // Debug.Log(gameObject.name + " receiving tick update " + tick);
         
         // remove any state older than this, this tick will be matched with index 0
         RemoveOldHistory(tick);
@@ -210,7 +223,7 @@ public class PlayerControl2D : NetworkBehaviour
         // compare with our local copy for position delta, request rewind
         if (stateHistory.Count == 0 || stateHistory[0].tick != tick)
         {
-            Debug.Log(gameObject.name + ": state missing: " + tick);
+            Debug.LogWarning(gameObject.name + ": state missing: " + tick);
             var state = new StateSet();
             // leave it empty force the mismatch, unless it really is 0 then that's probably fine
             stateHistory.Insert(0, state);
@@ -219,7 +232,7 @@ public class PlayerControl2D : NetworkBehaviour
             || (stateHistory[0].velocity - vel).sqrMagnitude > 0.25f
             || stateHistory[0].flipX != flipX) 
         {
-            Debug.Log(gameObject.name + ": state mismatch: (local) " + " " + stateHistory[0].position + " " + stateHistory[0].velocity 
+            Debug.LogWarning(gameObject.name + ": state mismatch: (local) " + " " + stateHistory[0].position + " " + stateHistory[0].velocity 
                      + " (remote) " + " " + pos + " " + vel);
             stateHistory[0].position = pos;
             stateHistory[0].velocity = vel;
@@ -251,7 +264,7 @@ public class PlayerControl2D : NetworkBehaviour
         while (last > 0 && tick < commandHistory[last].tick) {
             last--;
         }
-        Debug.Log(gameObject.name + ": Moved through cmds " + (commandHistory.Count - last - 1) + " found tick " + commandHistory[last].tick + " compared with " + tick);
+        // Debug.Log(gameObject.name + ": Moved through cmds " + (commandHistory.Count - last - 1) + " found tick " + commandHistory[last].tick + " compared with " + tick);
         return commandHistory[last];
     }
     
@@ -267,7 +280,7 @@ public class PlayerControl2D : NetworkBehaviour
         while (last > 0 && tick < stateHistory[last].tick) {
             last--;
         }
-        Debug.Log(gameObject.name + ": Moved through sts " + (stateHistory.Count - last - 1) + " found tick " + stateHistory[last].tick + " compared with " + tick);
+        // Debug.Log(gameObject.name + ": Moved through sts " + (stateHistory.Count - last - 1) + " found tick " + stateHistory[last].tick + " compared with " + tick);
         return stateHistory[last];
     }
 
@@ -289,7 +302,7 @@ public class PlayerControl2D : NetworkBehaviour
         StoreCommandSetClientRpc(tick, lastInput, quick, strong, roll);
         // TODO If this tick is older than we've simulated we need to rewind on the server to correct the commands
         if (!IsOwner) {
-            Debug.Log(gameObject.name + ": server storing/rebroadcasting command for tick " + tick + " " + lastInput + " " + quick + " " + strong + " " + roll);
+            // Debug.Log(gameObject.name + ": server storing/rebroadcasting command for tick " + tick + " " + lastInput + " " + quick + " " + strong + " " + roll);
             StoreCommandSetLocal(tick, lastInput, quick, strong, roll);
         }
     }
@@ -299,7 +312,7 @@ public class PlayerControl2D : NetworkBehaviour
     {
         if (!IsOwner && !NetworkManager.IsServer)
         {
-            Debug.Log(gameObject.name + ": client storing command for tick " + tick + " " + lastInput + " " + quick + " " + strong + " " + roll);
+            // Debug.Log(gameObject.name + ": client storing command for tick " + tick + " " + lastInput + " " + quick + " " + strong + " " + roll);
             StoreCommandSetLocal(tick, lastInput, quick, strong, roll);
         }
     }
@@ -325,14 +338,12 @@ public class PlayerControl2D : NetworkBehaviour
 
     public void RollFrameStart()
     {       
-        Debug.Log("Roll frame start");
         isRolling = true;
         gameObject.layer = LayerMask.NameToLayer("RollInteraction");
     }
 
     public void RollFrameFinished()
     {
-        Debug.Log("Roll frame finished");
         isRolling = false;
         gameObject.layer = LayerMask.NameToLayer("Default");
     }

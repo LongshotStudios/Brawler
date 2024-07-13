@@ -59,12 +59,12 @@ public class NetworkedPhysicsController : MonoBehaviour
     private void NetworkTick()
     {
         var now = NetworkManager.Singleton.LocalTime.Tick;
-        Debug.Log("Ticking the physics via network at tick " + now + " realtime " + Time.realtimeSinceStartup);
+        // Debug.Log("Ticking the physics via network at tick " + now + " realtime " + Time.realtimeSinceStartup);
 
         startofNetworkTick?.Invoke(now);
 
         if (rewindTick < now) {
-            Debug.Log("Rewinding tick from " + rewindTick + " to " + now);
+            Debug.LogWarning("Rewinding tick from " + rewindTick + " to " + now);
         }
 
         while (rewindTick < now) {
@@ -74,7 +74,7 @@ public class NetworkedPhysicsController : MonoBehaviour
             rewindTick++;
         }
         
-        Debug.Log("Simulating tick " + now);
+        // Debug.Log("Simulating tick " + now);
         beforeSimulate?.Invoke(now);
         Physics2D.Simulate(NetworkManager.Singleton.LocalTime.FixedDeltaTime);
         afterSimulate?.Invoke(now);
