@@ -17,17 +17,24 @@ public class PlayerControl2D : NetworkBehaviour
     public float rollSpeed = 1.0f;
     private bool isRolling = false;
 
-    private class StateSet
+    private struct StateSet
     {
         public int tick;
         public Vector2 position;
         public Vector2 velocity;
         public bool flipX;
+        public bool Approximately(StateSet other) {
+            return (this.position - other.position).sqrMagnitude < 0.25f
+                && (this.velocity - other.velocity).sqrMagnitude < 0.25f
+                && this.flipX == other.flipX;
+        }
     }
-    private List<StateSet> stateHistory = new List<StateSet>();
-    private List<StateSet> serverHistory = new List<StateSet>();
+    // private List<StateSet> stateHistory = new List<StateSet>();
+    // private List<StateSet> serverHistory = new List<StateSet>();
+    private RingBuffer<StateSet> stateHistory = new RingBuffer<StateSet>(16);
+    private RingBuffer<StateSet> serverHistory = new RingBuffer<StateSet>(16);
 
-    private class CommandSet
+    private struct CommandSet
     {
         public int tick;
         public Vector2 lastInput;
@@ -35,7 +42,8 @@ public class PlayerControl2D : NetworkBehaviour
         public bool strong;
         public bool roll;
     }
-    private List<CommandSet> commandHistory = new List<CommandSet>();
+    // private List<CommandSet> commandHistory = new List<CommandSet>();
+    private RingBuffer<CommandSet> commandHistory = new RingBuffer<CommandSet>(16);
 
     private void Awake()
     {
@@ -142,7 +150,7 @@ public class PlayerControl2D : NetworkBehaviour
 
     private void AfterSimulate(int tick)
     {
-        // Debug.Log(gameObject.name + ": After sim " + tick + " pos " + rb.position + " vel " + rb.velocity + " input " + lastInput);
+        Debug.Log(gameObject.name + ": After sim " + tick + " pos " + rb.position + " vel " + rb.velocity + " input " + lastInput);
         // store the state for later rewind
         StoreStateSetLocal(lastTick + 1, rb.position, rb.velocity, spriteRenderer.flipX);
         if (NetworkManager.IsServer) {
@@ -187,21 +195,22 @@ public class PlayerControl2D : NetworkBehaviour
 
     private void StoreStateSetLocal(int tick, Vector2 pos,  Vector2 vel, bool flipX)
     {
-        StateSet state = null;
-        // Better optimization?
-        for (int i = 0; i < stateHistory.Count; i++) {
-            if (stateHistory[i].tick == tick) {
-                state = stateHistory[i];
-            }
-        }
-        if (state == null) {
-            state = new StateSet();
-        }
+        StateSet state = new StateSet();
         state.tick = tick;
         state.position = pos;
         state.velocity = vel;
         state.flipX = flipX;
-        stateHistory.Add(state);
+        // Better optimization?
+        for (int i = 0; i < stateHistory.Count; i++) {
+            if (stateHistory[i].tick == tick) {
+                stateHistory[i] = state;
+                return;
+            }
+        }
+
+        if (!stateHistory.Push(state)) {
+            Debug.LogError("Ran out of room for history info");
+        }
     }
 
     private void StoreServerSetLocal(int tick, Vector2 pos, Vector2 vel, bool flipX)
@@ -211,59 +220,68 @@ public class PlayerControl2D : NetworkBehaviour
         state.position = pos;
         state.velocity = vel;
         state.flipX = flipX;
-        serverHistory.Add(state);
+        if (!serverHistory.Push(state)) {
+            Debug.LogError("Ran out of room for history info");
+        }
     }
 
     [ClientRpc]
     private void UpdateStateSetClientRpc(int tick, Vector2 pos, Vector2 vel, bool flipX)
     {
-        if (serverHistory.Count > 0 && tick < serverHistory[0].tick)
-        {
+        if (!serverHistory.Empty && tick < serverHistory.Front.tick) {
             // it's old news, ignore it
             return;
         } 
-        
-        // Debug.Log(gameObject.name + ": client receiving tick update " + tick);
-        
         StoreServerSetLocal(tick, pos, vel, flipX);
 
-        while (serverHistory[0].tick < stateHistory[0].tick) {
-            serverHistory.RemoveAt(0);
+        // no state history yet to compare with, wait till we simulate one
+        if (stateHistory.Empty) {
+            return;
         }
 
-        // if our local history is somehow was behind the server, move till we catch up
-        while (stateHistory.Count > 1 && stateHistory[0].tick != serverHistory[0].tick) {
-            stateHistory.RemoveAt(0);
+        Debug.Log(gameObject.name + ": client receiving tick update " + tick);
+        
+        while (serverHistory.Count > 0 && serverHistory.Front.tick < stateHistory.Front.tick) {
+            serverHistory.Pop();
         }
 
-        while (commandHistory[0].tick < stateHistory[0].tick - 1) {
-            commandHistory.RemoveAt(0);
-        }
-
-        if (stateHistory[0].tick != serverHistory[0].tick) {
+        if (serverHistory.Empty) {
             return;
         }
         
+        Debug.Log(gameObject.name + ": removing front end from state history");
+
+        // if our local history is somehow was behind the server, move till we catch up
+        while (stateHistory.Count > 1 && stateHistory.Front.tick != serverHistory.Front.tick) {
+            stateHistory.Pop();
+        }
+        
+        Debug.Log(gameObject.name + ": removing front end from command history");
+
+        while (commandHistory.Count > 0 && commandHistory.Front.tick < stateHistory.Front.tick - 1) {
+            commandHistory.Pop();
+        }
+        
+        if (stateHistory.Front.tick != serverHistory.Front.tick) {
+            return;
+        }
+        
+        Debug.Log(gameObject.name + ": comparing state histories starting at " + stateHistory.Front.tick);
+        Debug.Log(gameObject.name + ": sizes before update stateHistory: " + stateHistory.Count
+                  + " serverHistory: " + serverHistory.Count + " commands: " + commandHistory.Count);
         while (serverHistory.Count > 1 && stateHistory.Count > 1) {
-            if ((stateHistory[0].position - serverHistory[0].position).sqrMagnitude > 0.25f
-                || (stateHistory[0].velocity - serverHistory[0].velocity).sqrMagnitude > 0.25f
-                || stateHistory[0].flipX != serverHistory[0].flipX)
-            {
-                Debug.LogWarning(gameObject.name + ": state mismatch tick " + stateHistory[0].tick
-                                 + ": (local) " + " " + stateHistory[0].position + " " + stateHistory[0].velocity
-                                 + " (remote) " + " " + serverHistory[0].position + " " + serverHistory[0].velocity);
-                stateHistory[0].position = serverHistory[0].position;
-                stateHistory[0].velocity = serverHistory[0].velocity;
-                stateHistory[0].flipX = serverHistory[0].flipX;
-                NetworkedPhysicsController.instance.RequestReplayFromTick(stateHistory[0].tick);
+            if (stateHistory.Front.Approximately(serverHistory.Front)) {
+                stateHistory.Pop();
+                serverHistory.Pop();
+            } else {
+                Debug.LogWarning(gameObject.name + ": state mismatch tick " + stateHistory.Front.tick);
+                stateHistory.Front = serverHistory.Front;
+                NetworkedPhysicsController.instance.RequestReplayFromTick(stateHistory.Front.tick);
                 break;
             }
-            else
-            {
-                stateHistory.RemoveAt(0);
-                serverHistory.RemoveAt(0);
-            }
         }
+        Debug.Log(gameObject.name + ": sizes after update stateHistory: " + stateHistory.Count
+                  + " serverHistory: " + serverHistory.Count + " commands: " + commandHistory.Count);
     }
 
     private void StoreCommandSetLocal(int tick, Vector2 lastInput, bool quick, bool strong, bool roll)
@@ -274,7 +292,9 @@ public class PlayerControl2D : NetworkBehaviour
         commands.quick = quick;
         commands.strong = strong;
         commands.roll = roll;
-        commandHistory.Add(commands);
+        if (!commandHistory.Push(commands)) {
+            Debug.LogError("Ran out of room for history info");
+        }
     }
 
     private CommandSet FindOrExtrapolateCommandSet(int tick)
