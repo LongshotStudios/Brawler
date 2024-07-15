@@ -86,7 +86,7 @@ public class NetworkedPhysicsController : MonoBehaviour
     public void RequestReplayFromTick(int tick)
     {
         // Only replay from the latest request (it means we have a recent server state)
-        if (rewindTick >= int.MaxValue || tick > rewindTick) {
+        if (rewindTick >= int.MaxValue || tick < rewindTick) {
             rewindTick = tick;
         }
     }

@@ -23,16 +23,22 @@ public class PlayerControl2D : NetworkBehaviour
         public Vector2 position;
         public Vector2 velocity;
         public bool flipX;
+
+        public void Replace(StateSet other) {
+            tick = other.tick;
+            position = other.position;
+            velocity = other.velocity;
+            flipX = other.flipX;
+        }
         public bool Approximately(StateSet other) {
-            return (this.position - other.position).sqrMagnitude < 0.25f
-                && (this.velocity - other.velocity).sqrMagnitude < 0.25f
-                && this.flipX == other.flipX;
+            return (position - other.position).sqrMagnitude < 0.01f
+                && (velocity - other.velocity).sqrMagnitude < 0.01f
+                && flipX == other.flipX;
         }
     }
-    // private List<StateSet> stateHistory = new List<StateSet>();
-    // private List<StateSet> serverHistory = new List<StateSet>();
-    private RingBuffer<StateSet> stateHistory = new RingBuffer<StateSet>(16);
-    private RingBuffer<StateSet> serverHistory = new RingBuffer<StateSet>(16);
+
+    private RingBuffer<StateSet> stateHistory;
+    private RingBuffer<StateSet> serverHistory;
 
     private struct CommandSet
     {
@@ -42,14 +48,17 @@ public class PlayerControl2D : NetworkBehaviour
         public bool strong;
         public bool roll;
     }
-    // private List<CommandSet> commandHistory = new List<CommandSet>();
-    private RingBuffer<CommandSet> commandHistory = new RingBuffer<CommandSet>(16);
+    private RingBuffer<CommandSet> commandHistory;
 
     private void Awake()
     {
         rb = GetComponent<Rigidbody2D>();
         animator = GetComponent<Animator>();
         spriteRenderer = GetComponent<SpriteRenderer>();
+    
+        stateHistory = new RingBuffer<StateSet>(NetworkManager.Singleton.NetworkTickSystem.TickRate);
+        serverHistory = new RingBuffer<StateSet>(NetworkManager.Singleton.NetworkTickSystem.TickRate);
+        commandHistory = new RingBuffer<CommandSet>(NetworkManager.Singleton.NetworkTickSystem.TickRate);
     }
 
     public override void OnNetworkSpawn()
@@ -102,18 +111,18 @@ public class PlayerControl2D : NetworkBehaviour
 
     private void StartofTick(int tick)
     {
-        if (IsOwner)
-        {
-            // save/send out our current command state here before any rewinds etc
-            StoreCommandSetLocal(tick, lastInput, lastQuick, lastStrong, lastRoll);
-            if (NetworkManager.IsServer) {
-                StoreCommandSetClientRpc(tick, lastInput, lastQuick, lastStrong, lastRoll);
-            } else {
-                StoreCommandSetServerRpc(tick, lastInput, lastQuick, lastStrong, lastRoll);
-            }
-            // Debug.Log(gameObject.name + ": local storing command for tick " + tick + " " + lastInput +
-                      // " " + lastQuick + " " + lastStrong + " " + lastRoll);
+        if (!IsOwner) {
+            return;
         }
+        // save/send out our current command state here before any rewinds etc
+        StoreCommandSetLocal(tick, lastInput, lastQuick, lastStrong, lastRoll);
+        if (NetworkManager.IsServer) {
+            StoreCommandSetClientRpc(tick, lastInput, lastQuick, lastStrong, lastRoll);
+        } else {
+            StoreCommandSetServerRpc(tick, lastInput, lastQuick, lastStrong, lastRoll);
+        }
+        // Debug.Log(gameObject.name + ": local storing command for tick " + tick + " " + lastInput +
+                  // " " + lastQuick + " " + lastStrong + " " + lastRoll);
     }
 
     private void BeforeSimulate(int tick)
@@ -232,6 +241,8 @@ public class PlayerControl2D : NetworkBehaviour
             // it's old news, ignore it
             return;
         } 
+        Debug.Log(gameObject.name + ": client receiving tick update " + tick);
+        
         StoreServerSetLocal(tick, pos, vel, flipX);
 
         // no state history yet to compare with, wait till we simulate one
@@ -239,8 +250,6 @@ public class PlayerControl2D : NetworkBehaviour
             return;
         }
 
-        Debug.Log(gameObject.name + ": client receiving tick update " + tick);
-        
         while (serverHistory.Count > 0 && serverHistory.Front.tick < stateHistory.Front.tick) {
             serverHistory.Pop();
         }
@@ -249,15 +258,11 @@ public class PlayerControl2D : NetworkBehaviour
             return;
         }
         
-        Debug.Log(gameObject.name + ": removing front end from state history");
-
         // if our local history is somehow was behind the server, move till we catch up
         while (stateHistory.Count > 1 && stateHistory.Front.tick != serverHistory.Front.tick) {
             stateHistory.Pop();
         }
         
-        Debug.Log(gameObject.name + ": removing front end from command history");
-
         while (commandHistory.Count > 0 && commandHistory.Front.tick < stateHistory.Front.tick - 1) {
             commandHistory.Pop();
         }
@@ -266,22 +271,17 @@ public class PlayerControl2D : NetworkBehaviour
             return;
         }
         
-        Debug.Log(gameObject.name + ": comparing state histories starting at " + stateHistory.Front.tick);
-        Debug.Log(gameObject.name + ": sizes before update stateHistory: " + stateHistory.Count
-                  + " serverHistory: " + serverHistory.Count + " commands: " + commandHistory.Count);
         while (serverHistory.Count > 1 && stateHistory.Count > 1) {
             if (stateHistory.Front.Approximately(serverHistory.Front)) {
                 stateHistory.Pop();
                 serverHistory.Pop();
             } else {
                 Debug.LogWarning(gameObject.name + ": state mismatch tick " + stateHistory.Front.tick);
-                stateHistory.Front = serverHistory.Front;
+                stateHistory.Front.Replace(serverHistory.Front);
                 NetworkedPhysicsController.instance.RequestReplayFromTick(stateHistory.Front.tick);
                 break;
             }
         }
-        Debug.Log(gameObject.name + ": sizes after update stateHistory: " + stateHistory.Count
-                  + " serverHistory: " + serverHistory.Count + " commands: " + commandHistory.Count);
     }
 
     private void StoreCommandSetLocal(int tick, Vector2 lastInput, bool quick, bool strong, bool roll)

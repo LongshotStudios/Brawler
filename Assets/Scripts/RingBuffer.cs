@@ -9,7 +9,7 @@ public class RingBuffer<T>
     private int first;
     private int last;
 
-    public RingBuffer(int size = 64)
+    public RingBuffer(uint size = 64)
     {
         buffer = new T[size];
         first = 0;
@@ -35,7 +35,6 @@ public class RingBuffer<T>
     
     public T Front {
         get => Empty ? default : buffer[first];
-        set => buffer[first] = value;
     }
 
     public bool Push(T item) {
