@@ -20,11 +20,6 @@ public class RingBuffer<T>
         return i % buffer.Length;
     }
 
-    public T this[int key] {
-        get => buffer[ringIndex(key + first)];
-        set => buffer[ringIndex(key + first)] = value;
-    }
-
     public int Count {
         get => (last >= first) ? last - first : last + buffer.Length - first;
     }
@@ -33,8 +28,12 @@ public class RingBuffer<T>
         get => first == last;   
     }
     
-    public T Front {
-        get => Empty ? default : buffer[first];
+    public ref T this[int key] {
+        get => ref buffer[ringIndex(key + first)];
+    }
+
+    public ref T Front {
+        get => ref buffer[first];
     }
 
     public bool Push(T item) {

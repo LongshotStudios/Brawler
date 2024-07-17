@@ -15,7 +15,7 @@ public class NetworkedPhysicsController : MonoBehaviour
     public event Update afterRewindSim;
 
     public int maxStateHistory = 24;
-    private int rewindTick = Int32.MaxValue;
+    private int rewindTick = -1;
     
     private List<Rigidbody2D> registeredBodies = new List<Rigidbody2D>();
 
@@ -46,6 +46,7 @@ public class NetworkedPhysicsController : MonoBehaviour
     {
         Physics2D.simulationMode = SimulationMode2D.Script;
         NetworkManager.Singleton.NetworkTickSystem.Tick += NetworkTick;
+        rewindTick = NetworkManager.Singleton.LocalTime.Tick;
     }
 
     private void OnDestroy()
@@ -76,17 +77,20 @@ public class NetworkedPhysicsController : MonoBehaviour
         beforeSimulate?.Invoke(now);
         Physics2D.Simulate(NetworkManager.Singleton.LocalTime.FixedDeltaTime);
         afterSimulate?.Invoke(now);
-        
-        // set it to the next tick so that we don't rewind, unless requested
-        rewindTick = int.MaxValue;
-        
+
         endofNetworkTick?.Invoke(now);
+        
+        // rewind may have been requested after simulating and finding our match against the latest serverstate
+        if (rewindTick == now) {
+            // if we're caught up, set it to the next tick so that we don't rewind, unless requested
+            rewindTick++;
+        }
     }
 
     public void RequestReplayFromTick(int tick)
     {
-        // Only replay from the latest request (it means we have a recent server state)
-        if (rewindTick >= int.MaxValue || tick < rewindTick) {
+        // replay the earliest request, helps to align the histories
+        if (tick < rewindTick) {
             rewindTick = tick;
         }
     }

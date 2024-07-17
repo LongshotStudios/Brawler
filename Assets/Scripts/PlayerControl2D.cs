@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using JetBrains.Annotations;
 using Unity.Netcode;
 using UnityEngine;
 
@@ -34,6 +35,11 @@ public class PlayerControl2D : NetworkBehaviour
             return (position - other.position).sqrMagnitude < 0.01f
                 && (velocity - other.velocity).sqrMagnitude < 0.01f
                 && flipX == other.flipX;
+        }
+
+        public string ToString()
+        {
+            return "t:" + tick + ", p:" + position + ", v:" + velocity + ", f:" + flipX;
         }
     }
 
@@ -162,6 +168,7 @@ public class PlayerControl2D : NetworkBehaviour
         Debug.Log(gameObject.name + ": After sim " + tick + " pos " + rb.position + " vel " + rb.velocity + " input " + lastInput);
         // store the state for later rewind
         StoreStateSetLocal(lastTick + 1, rb.position, rb.velocity, spriteRenderer.flipX);
+        CheckAndClearStateHistory();
         if (NetworkManager.IsServer) {
             // Send the latest state from the server so the clients can update
             UpdateStateSetClientRpc(lastTick + 1, rb.position, rb.velocity, spriteRenderer.flipX);
@@ -174,6 +181,7 @@ public class PlayerControl2D : NetworkBehaviour
         lastTick = commandSet.tick;
         if (lastTick != tick) {
             // no point in rewinding this if we don't have the state anyway
+            Debug.LogWarning(gameObject.name + ": ignoring rewind at tick " + tick + " because no command set");
             return;
         }
         lastInput = commandSet.lastInput;
@@ -182,6 +190,11 @@ public class PlayerControl2D : NetworkBehaviour
         lastRoll = commandSet.roll;
         
         StateSet state = FindOrExtrapolateStateSet(tick);
+        if (state.tick != tick) {
+            Debug.LogWarning(gameObject.name + ": ignoring rewind at tick " + tick + " because no state available");
+            lastTick = state.tick;
+            return;
+        }
         rb.position = state.position;
         rb.velocity = state.velocity;
         spriteRenderer.flipX = state.flipX;
@@ -195,6 +208,7 @@ public class PlayerControl2D : NetworkBehaviour
         if (lastTick != tick) {
             return;
         }
+        Debug.Log(gameObject.name + ": After rewind " + (lastTick + 1) + " pos " + rb.position + " vel " + rb.velocity + " input " + lastInput);
         StoreStateSetLocal(lastTick + 1, rb.position, rb.velocity, spriteRenderer.flipX);
         if (NetworkManager.IsServer) {
             // Send the latest state from the server so the clients can update
@@ -212,8 +226,16 @@ public class PlayerControl2D : NetworkBehaviour
         // Better optimization?
         for (int i = 0; i < stateHistory.Count; i++) {
             if (stateHistory[i].tick == tick) {
-                stateHistory[i] = state;
+                stateHistory[i].Replace(state);
                 return;
+            }
+        }
+
+        if (!stateHistory.Empty) {
+            var last = stateHistory[stateHistory.Count - 1];
+            if (tick != last.tick + 1) {
+                Debug.LogWarning(gameObject.name + ": Adding out of sequence tick " + tick + " last known " +
+                                 last.tick);
             }
         }
 
@@ -229,6 +251,15 @@ public class PlayerControl2D : NetworkBehaviour
         state.position = pos;
         state.velocity = vel;
         state.flipX = flipX;
+
+        if (!serverHistory.Empty) {
+            var last = serverHistory[serverHistory.Count - 1];
+            if (tick != last.tick + 1) {
+                Debug.LogWarning(gameObject.name + ": Adding out of sequence tick " + tick + " last known " +
+                                 last.tick);
+            }
+        }
+
         if (!serverHistory.Push(state)) {
             Debug.LogError("Ran out of room for history info");
         }
@@ -237,14 +268,18 @@ public class PlayerControl2D : NetworkBehaviour
     [ClientRpc]
     private void UpdateStateSetClientRpc(int tick, Vector2 pos, Vector2 vel, bool flipX)
     {
-        if (!serverHistory.Empty && tick < serverHistory.Front.tick) {
+        if (!serverHistory.Empty && tick < serverHistory.Front.tick)
+        {
             // it's old news, ignore it
             return;
-        } 
-        Debug.Log(gameObject.name + ": client receiving tick update " + tick);
-        
-        StoreServerSetLocal(tick, pos, vel, flipX);
+        }
 
+        Debug.Log(gameObject.name + ": client receiving tick update " + tick);
+        StoreServerSetLocal(tick, pos, vel, flipX);
+        CheckAndClearStateHistory();
+    }
+    
+    private void CheckAndClearStateHistory() {
         // no state history yet to compare with, wait till we simulate one
         if (stateHistory.Empty) {
             return;
@@ -267,16 +302,16 @@ public class PlayerControl2D : NetworkBehaviour
             commandHistory.Pop();
         }
         
-        if (stateHistory.Front.tick != serverHistory.Front.tick) {
-            return;
-        }
-        
         while (serverHistory.Count > 1 && stateHistory.Count > 1) {
+            if (stateHistory.Front.tick != serverHistory.Front.tick) {
+                break;
+            }
             if (stateHistory.Front.Approximately(serverHistory.Front)) {
                 stateHistory.Pop();
                 serverHistory.Pop();
             } else {
-                Debug.LogWarning(gameObject.name + ": state mismatch tick " + stateHistory.Front.tick);
+                Debug.LogWarning(gameObject.name + ": state mismatch tick " + stateHistory.Front.tick 
+                                 + "(local): " + stateHistory.Front.ToString() + " " + serverHistory.Front.ToString());
                 stateHistory.Front.Replace(serverHistory.Front);
                 NetworkedPhysicsController.instance.RequestReplayFromTick(stateHistory.Front.tick);
                 break;
@@ -293,14 +328,16 @@ public class PlayerControl2D : NetworkBehaviour
         commands.strong = strong;
         commands.roll = roll;
         if (!commandHistory.Push(commands)) {
-            Debug.LogError("Ran out of room for history info");
+            Debug.LogError(gameObject.name + ": Ran out of room for history info");
+        } else {
+            Debug.Log(gameObject.name + ": storing command set at tick " + tick);
         }
     }
 
     private CommandSet FindOrExtrapolateCommandSet(int tick)
     {
         if (commandHistory.Count == 0) {
-            Debug.LogWarning("No command history by the time we're looking for one");
+            Debug.LogWarning(gameObject.name + ": No command history by the time we're looking for one");
             var cmd = new CommandSet();
             cmd.tick = -1;
             return cmd;
@@ -316,7 +353,7 @@ public class PlayerControl2D : NetworkBehaviour
     private StateSet FindOrExtrapolateStateSet(int tick)
     {
         if (stateHistory.Count == 0) {
-            Debug.LogWarning("No state history to work with when searching for one");
+            Debug.LogWarning(gameObject.name + ": No state history to work with when searching for one");
             var state = new StateSet();
             state.tick = -1;
             return state;
