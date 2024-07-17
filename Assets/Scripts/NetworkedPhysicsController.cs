@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 using Unity.Netcode;
+using Unity.VisualScripting;
 
 public class NetworkedPhysicsController : MonoBehaviour
 {
@@ -13,9 +14,7 @@ public class NetworkedPhysicsController : MonoBehaviour
     public event Update afterSimulate;
     public event Update beforeRewindSim;
     public event Update afterRewindSim;
-
-    public int maxStateHistory = 24;
-    private int rewindTick = -1;
+    public int rewindTick { get; private set; }
     
     private List<Rigidbody2D> registeredBodies = new List<Rigidbody2D>();
 
@@ -42,11 +41,19 @@ public class NetworkedPhysicsController : MonoBehaviour
         }
     }
 
+    public bool ReplayRequested 
+    {
+        get {
+            return rewindTick < NetworkManager.Singleton.ServerTime.Tick;
+            // return rewindTick != int.MaxValue;
+        }
+    }   
+
     private void Awake()
     {
         Physics2D.simulationMode = SimulationMode2D.Script;
         NetworkManager.Singleton.NetworkTickSystem.Tick += NetworkTick;
-        rewindTick = NetworkManager.Singleton.LocalTime.Tick;
+        rewindTick = NetworkManager.Singleton.ServerTime.Tick + 1;
     }
 
     private void OnDestroy()
@@ -57,7 +64,7 @@ public class NetworkedPhysicsController : MonoBehaviour
 
     private void NetworkTick()
     {
-        var now = NetworkManager.Singleton.LocalTime.Tick;
+        var now = NetworkManager.Singleton.ServerTime.Tick;
         // Debug.Log("Ticking the physics via network at tick " + now + " realtime " + Time.realtimeSinceStartup);
 
         startofNetworkTick?.Invoke(now);
@@ -68,21 +75,20 @@ public class NetworkedPhysicsController : MonoBehaviour
 
         while (rewindTick < now) {
             beforeRewindSim?.Invoke(rewindTick);
-            Physics2D.Simulate(NetworkManager.Singleton.LocalTime.FixedDeltaTime);
+            Physics2D.Simulate(NetworkManager.Singleton.ServerTime.FixedDeltaTime);
             afterRewindSim?.Invoke(rewindTick);
             rewindTick++;
         }
         
         // Debug.Log("Simulating tick " + now);
         beforeSimulate?.Invoke(now);
-        Physics2D.Simulate(NetworkManager.Singleton.LocalTime.FixedDeltaTime);
+        Physics2D.Simulate(NetworkManager.Singleton.ServerTime.FixedDeltaTime);
         afterSimulate?.Invoke(now);
 
         endofNetworkTick?.Invoke(now);
         
-        // rewind may have been requested after simulating and finding our match against the latest serverstate
         if (rewindTick == now) {
-            // if we're caught up, set it to the next tick so that we don't rewind, unless requested
+            // if we're caught up, undo the rewind now
             rewindTick++;
         }
     }
