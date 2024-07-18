@@ -58,7 +58,9 @@ public class NetworkedPhysicsController : MonoBehaviour
 
     private void OnDestroy()
     {
-        NetworkManager.Singleton.NetworkTickSystem.Tick -= NetworkTick;
+        if (NetworkManager.Singleton) {
+            NetworkManager.Singleton.NetworkTickSystem.Tick -= NetworkTick;
+        }
         Physics2D.simulationMode = SimulationMode2D.FixedUpdate;
     }
 

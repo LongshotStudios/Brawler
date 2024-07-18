@@ -62,9 +62,9 @@ public class PlayerControl2D : NetworkBehaviour
         animator = GetComponent<Animator>();
         spriteRenderer = GetComponent<SpriteRenderer>();
     
-        stateHistory = new RingBuffer<StateSet>(NetworkManager.Singleton.NetworkTickSystem.TickRate * 10);
-        serverHistory = new RingBuffer<StateSet>(NetworkManager.Singleton.NetworkTickSystem.TickRate * 10);
-        commandHistory = new RingBuffer<CommandSet>(NetworkManager.Singleton.NetworkTickSystem.TickRate * 10);
+        stateHistory = new RingBuffer<StateSet>(NetworkManager.Singleton.NetworkTickSystem.TickRate * 2);
+        serverHistory = new RingBuffer<StateSet>(NetworkManager.Singleton.NetworkTickSystem.TickRate * 2);
+        commandHistory = new RingBuffer<CommandSet>(NetworkManager.Singleton.NetworkTickSystem.TickRate * 2);
     }
 
     public override void OnNetworkSpawn()
@@ -78,7 +78,7 @@ public class PlayerControl2D : NetworkBehaviour
         var tick = NetworkManager.Singleton.LocalTime.Tick;
         // Debug.Log(gameObject.name + ": storing local state at start tick " + tick);
         StoreStateSetLocal(tick, rb.position, rb.velocity, spriteRenderer.flipX);
-        // PrintState("after initial tick " + tick);
+        PrintState("after initial tick " + tick);
     }
 
     public override void OnNetworkDespawn()
@@ -131,7 +131,7 @@ public class PlayerControl2D : NetworkBehaviour
         // Debug.Log(gameObject.name + ": local storing command for tick " + tick + " " + lastInput +
                   // " " + lastQuick + " " + lastStrong + " " + lastRoll);
         if (NetworkedPhysicsController.instance.ReplayRequested) {
-            // PrintState("State for rewind ");
+            PrintState("State for rewind ");
         }
     }
 
@@ -177,7 +177,7 @@ public class PlayerControl2D : NetworkBehaviour
             // Send the latest state from the server so the clients can update
             UpdateStateSetClientRpc(lastTick + 1, rb.position, rb.velocity, spriteRenderer.flipX);
         }
-        // PrintState("after sim tick " + (lastTick + 1));
+        PrintState("after sim tick " + (lastTick + 1));
     }
 
     private void BeforeRewind(int tick)
@@ -290,7 +290,7 @@ public class PlayerControl2D : NetworkBehaviour
         // Debug.Log(gameObject.name + ": client receiving tick update " + tick);
         StoreServerSetLocal(tick, pos, vel, flipX);
         CheckAndClearStateHistory();
-        // PrintState("after server tick " + tick);
+        PrintState("after server tick " + tick);
     }
     
     private void CheckAndClearStateHistory() {
@@ -316,7 +316,7 @@ public class PlayerControl2D : NetworkBehaviour
             commandHistory.Pop();
         }
 
-        while (serverHistory.Count > 0 && stateHistory.Count > 1) {
+        while (serverHistory.Count > 0 && stateHistory.Count > NetworkManager.Singleton.NetworkTickSystem.TickRate / 2) {
             if (stateHistory.Front.tick != serverHistory.Front.tick) {
                 break;
             }
@@ -407,7 +407,7 @@ public class PlayerControl2D : NetworkBehaviour
         StoreCommandSetClientRpc(tick, lastInput, quick, strong, roll);
         // TODO If this tick is older than we've simulated we need to rewind on the server to correct the commands
         if (!IsOwner) {
-            // Debug.Log(gameObject.name + ": server storing/rebroadcasting command for tick " + tick + " " + lastInput + " " + quick + " " + strong + " " + roll);
+            Debug.Log(gameObject.name + ": server storing/rebroadcasting command for tick " + tick + " " + lastInput + " " + quick + " " + strong + " " + roll);
             StoreCommandSetLocal(tick, lastInput, quick, strong, roll);
             // We're getting a new client command lets replay back to this tick and play the corrected state
             NetworkedPhysicsController.instance.RequestReplayFromTick(tick);
