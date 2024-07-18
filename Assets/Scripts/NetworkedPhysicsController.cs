@@ -44,7 +44,7 @@ public class NetworkedPhysicsController : MonoBehaviour
     public bool ReplayRequested 
     {
         get {
-            return rewindTick < NetworkManager.Singleton.ServerTime.Tick;
+            return rewindTick < NetworkManager.Singleton.LocalTime.Tick;
             // return rewindTick != int.MaxValue;
         }
     }   
@@ -53,7 +53,7 @@ public class NetworkedPhysicsController : MonoBehaviour
     {
         Physics2D.simulationMode = SimulationMode2D.Script;
         NetworkManager.Singleton.NetworkTickSystem.Tick += NetworkTick;
-        rewindTick = NetworkManager.Singleton.ServerTime.Tick + 1;
+        rewindTick = NetworkManager.Singleton.LocalTime.Tick + 1;
     }
 
     private void OnDestroy()
@@ -64,7 +64,7 @@ public class NetworkedPhysicsController : MonoBehaviour
 
     private void NetworkTick()
     {
-        var now = NetworkManager.Singleton.ServerTime.Tick;
+        var now = NetworkManager.Singleton.LocalTime.Tick;
         // Debug.Log("Ticking the physics via network at tick " + now + " realtime " + Time.realtimeSinceStartup);
 
         startofNetworkTick?.Invoke(now);
@@ -75,14 +75,14 @@ public class NetworkedPhysicsController : MonoBehaviour
 
         while (rewindTick < now) {
             beforeRewindSim?.Invoke(rewindTick);
-            Physics2D.Simulate(NetworkManager.Singleton.ServerTime.FixedDeltaTime);
+            Physics2D.Simulate(NetworkManager.Singleton.LocalTime.FixedDeltaTime);
             afterRewindSim?.Invoke(rewindTick);
             rewindTick++;
         }
         
         // Debug.Log("Simulating tick " + now);
         beforeSimulate?.Invoke(now);
-        Physics2D.Simulate(NetworkManager.Singleton.ServerTime.FixedDeltaTime);
+        Physics2D.Simulate(NetworkManager.Singleton.LocalTime.FixedDeltaTime);
         afterSimulate?.Invoke(now);
 
         endofNetworkTick?.Invoke(now);

@@ -32,8 +32,8 @@ public class PlayerControl2D : NetworkBehaviour
             flipX = other.flipX;
         }
         public bool Approximately(StateSet other) {
-            return (position - other.position).sqrMagnitude < 0.01f
-                && (velocity - other.velocity).sqrMagnitude < 0.01f
+            return (position - other.position).sqrMagnitude < 0.001f
+                && (velocity - other.velocity).sqrMagnitude < 0.001f
                 && flipX == other.flipX;
         }
 
@@ -75,10 +75,10 @@ public class PlayerControl2D : NetworkBehaviour
         NetworkedPhysicsController.instance.beforeRewindSim += BeforeRewind;
         NetworkedPhysicsController.instance.afterRewindSim += AfterRewind;
         
-        var tick = NetworkManager.Singleton.ServerTime.Tick;
+        var tick = NetworkManager.Singleton.LocalTime.Tick;
         // Debug.Log(gameObject.name + ": storing local state at start tick " + tick);
         StoreStateSetLocal(tick, rb.position, rb.velocity, spriteRenderer.flipX);
-        PrintState("after initial tick " + tick);
+        // PrintState("after initial tick " + tick);
     }
 
     public override void OnNetworkDespawn()
@@ -94,8 +94,8 @@ public class PlayerControl2D : NetworkBehaviour
     {
         // sets up the simulation even just before its called by the network physics
         var speed = isRolling ? rollSpeed : walkSpeed;
-        var delta = lastInput * speed * NetworkManager.Singleton.ServerTime.FixedDeltaTime;
-        // Debug.Log(gameObject.name + ": Moving delta " + delta + " lastInput " + lastInput + " speed " + speed + " dt " + NetworkManager.Singleton.ServerTime.FixedDeltaTime);
+        var delta = lastInput * speed * NetworkManager.Singleton.LocalTime.FixedDeltaTime;
+            // Debug.Log(gameObject.name + ": Moving delta " + delta + " lastInput " + lastInput + " speed " + speed + " dt " + NetworkManager.Singleton.LocalTime.FixedDeltaTime);
         rb.MovePosition(rb.position + delta);
         
         if (lastQuick) {
@@ -131,7 +131,7 @@ public class PlayerControl2D : NetworkBehaviour
         // Debug.Log(gameObject.name + ": local storing command for tick " + tick + " " + lastInput +
                   // " " + lastQuick + " " + lastStrong + " " + lastRoll);
         if (NetworkedPhysicsController.instance.ReplayRequested) {
-            PrintState("State for rewind ");
+            // PrintState("State for rewind ");
         }
     }
 
@@ -177,7 +177,7 @@ public class PlayerControl2D : NetworkBehaviour
             // Send the latest state from the server so the clients can update
             UpdateStateSetClientRpc(lastTick + 1, rb.position, rb.velocity, spriteRenderer.flipX);
         }
-        PrintState("after sim tick " + (lastTick + 1));
+        // PrintState("after sim tick " + (lastTick + 1));
     }
 
     private void BeforeRewind(int tick)
@@ -186,7 +186,7 @@ public class PlayerControl2D : NetworkBehaviour
         lastTick = commandSet.tick;
         if (lastTick != tick) {
             // no point in rewinding this if we don't have the state anyway
-            Debug.LogWarning(gameObject.name + ": ignoring rewind at tick " + tick + " because no command set");
+            Debug.LogWarning(gameObject.name + ": error in rewind at tick " + tick + " because no command set");
             return;
         }
         lastInput = commandSet.lastInput;
@@ -290,7 +290,7 @@ public class PlayerControl2D : NetworkBehaviour
         // Debug.Log(gameObject.name + ": client receiving tick update " + tick);
         StoreServerSetLocal(tick, pos, vel, flipX);
         CheckAndClearStateHistory();
-        PrintState("after server tick " + tick);
+        // PrintState("after server tick " + tick);
     }
     
     private void CheckAndClearStateHistory() {
@@ -365,7 +365,7 @@ public class PlayerControl2D : NetworkBehaviour
         if (!commandHistory.Push(commands)) {
             Debug.LogError(gameObject.name + ": Ran out of room for history info");
         } else {
-            Debug.Log(gameObject.name + ": storing command set at tick " + tick);
+            // Debug.Log(gameObject.name + ": storing command set at tick " + tick);
         }
     }
 
