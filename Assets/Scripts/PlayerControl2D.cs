@@ -143,8 +143,6 @@ public class PlayerControl2D : NetworkBehaviour
             return;
         }
         
-        // Resimulate from the most recent command set we know (what if we already did? What about if we missed an older one?)
-        lastTick = commandSet.tick;
         lastInput = commandSet.lastInput;
         lastQuick = commandSet.quick;
         lastStrong = commandSet.strong;
@@ -160,24 +158,29 @@ public class PlayerControl2D : NetworkBehaviour
             return;
         }
 
-        // Debug.Log(gameObject.name + ": Before sim " + lastTick + " pos " + rb.position + " vel " + rb.velocity + " input " + lastInput);
+        if (state.tick != tick - 1)
+        {
+            Debug.LogWarning(gameObject.name + ": Missing previous tick, last known " + state.tick);
+        }
+
+        // Debug.Log(gameObject.name + ": Before sim " + tick + " pos " + rb.position + " vel " + rb.velocity + " input " + lastInput);
             
         LocalSim();
         
-        // Debug.Log(gameObject.name + ": After local sim " + lastTick + " pos " + rb.position + " vel " + rb.velocity + " input " + lastInput);
+        // Debug.Log(gameObject.name + ": After local sim " + tick + " pos " + rb.position + " vel " + rb.velocity + " input " + lastInput);
     }
 
     private void AfterSimulate(int tick)
     {
-        // Debug.Log(gameObject.name + ": After sim " + (lastTick + 1) + " pos " + rb.position + " vel " + rb.velocity + " input " + lastInput);
+        // Debug.Log(gameObject.name + ": After sim " + (tick + 1) + " pos " + rb.position + " vel " + rb.velocity + " input " + lastInput);
         // store the state for later rewind
-        StoreStateSetLocal(lastTick + 1, rb.position, rb.velocity, spriteRenderer.flipX);
+        StoreStateSetLocal(tick + 1, rb.position, rb.velocity, spriteRenderer.flipX);
         CheckAndClearStateHistory();
         if (NetworkManager.IsServer) {
             // Send the latest state from the server so the clients can update
-            UpdateStateSetClientRpc(lastTick + 1, rb.position, rb.velocity, spriteRenderer.flipX);
+            UpdateStateSetClientRpc(tick + 1, rb.position, rb.velocity, spriteRenderer.flipX);
         }
-        PrintState("after sim tick " + (lastTick + 1));
+        PrintState("after sim tick " + (tick + 1));
     }
 
     private void BeforeRewind(int tick)
